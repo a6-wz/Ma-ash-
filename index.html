@@ -1631,60 +1631,165 @@
         }
     }
 
-    // ==========================================
-    // EXCEL ARABIC FORMATTING FUNCTIONS (معدلة)
-    // ==========================================
+    // ==========================================================
+    // EXCEL ADVANCED ARABIC & MULTI-SHEET EXPORT SYSTEM (مُحدث)
+    // ==========================================================
 
-    // تحويل الكائن البرمجي الداخلي إلى صيغة عربية واضحة ومحددة
-    function formatRecordForExcel(r) {
-        return {
-            "التاريخ": r.date || '---',
-            "الاسم / الجهة": r.personName || '---',
-            "نوع المعاملة": r.type || '---',
-            "المبلغ": r.amount !== undefined ? r.amount : 0,
-            "اسم التاجر المورد": r.merchantName || '---',
-            "اسم المنتج": r.productName || '---',
-            "الوزن (كغم)": r.soldKg !== undefined && r.soldKg !== null ? r.soldKg : '---',
-            "عدد القطع": r.soldPieces !== undefined && r.soldPieces !== null ? r.soldPieces : '---',
-            "البيان / التفاصيل": r.details || '---',
-            "حالة المعاملة": r.status || '---'
-        };
-    }
-
-    // دالة مساعدة لإنشاء ملف إكسل منسق باللغة العربية ومع اتجاه من اليمين إلى اليسار
-    function createExcelSheetWithFormat(dataArray, sheetName) {
-        const formattedData = dataArray.map(formatRecordForExcel);
-        const ws = XLSX.utils.json_to_sheet(formattedData);
+    // دالة مساعدة عامة لإنشاء شيت منسق يدعم اللغة العربية RTL والعرض التلقائي للأعمدة
+    function createFormattedSheet(jsonData, customCols = []) {
+        const ws = XLSX.utils.json_to_sheet(jsonData);
         
-        // ضبط اتجاه الورقة لتفتـح من اليمين إلى اليسار تلقائياً
+        // ضبط اتجاه الورقة لتفتح من اليمين إلى اليسار تلقائياً
         ws['!views'] = [{ RTL: true }];
         
-        // تحديد أبعاد الأعمدة تلقائياً لمنع تداخل النصوص
-        ws['!cols'] = [
-            { wch: 14 }, // التاريخ
-            { wch: 22 }, // الاسم / الجهة
-            { wch: 22 }, // نوع المعاملة
-            { wch: 16 }, // المبلغ
-            { wch: 22 }, // اسم التاجر المورد
-            { wch: 18 }, // اسم المنتج
-            { wch: 15 }, // الوزن (كغم)
-            { wch: 12 }, // عدد القطع
-            { wch: 35 }, // البيان / التفاصيل
-            { wch: 14 }  // حالة المعاملة
-        ];
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, sheetName);
-        return wb;
+        if (customCols.length > 0) {
+            ws['!cols'] = customCols;
+        } else if (jsonData.length > 0 && typeof jsonData[0] === 'object') {
+            const keys = Object.keys(jsonData[0]);
+            ws['!cols'] = keys.map(k => ({ wch: Math.max(k.length * 2.2, 18) }));
+        }
+        return ws;
     }
 
+    // 1. تصدير تقرير التاجر (البضاعة المستلمة + الديون + أسماء الزبائن المشتريين)
+    function exportMerchantToExcel(merchantName) {
+        const wb = XLSX.utils.book_new();
+
+        // أ) البضائع والشحنات المستلمة من هذا التاجر
+        const mShipments = [];
+        products.forEach(p => {
+            (p.suppliers || []).forEach(s => {
+                if (s.merchantName === merchantName) {
+                    mShipments.push({
+                        "التاريخ": s.date || '---',
+                        "اسم المنتج": p.name || '---',
+                        "طريقة التسديد": s.paymentMethod || 'عام',
+                        "سعر شراء الكيلو": s.buyPrice || 0,
+                        "نوع التعبئة": s.pkgType || '---',
+                        "عدد القطع الواردة": s.pieceCount || 0,
+                        "الوزن الإجمالي (كغم)": s.totalKg || 0,
+                        "التكلفة الإجمالية": s.totalCost || 0,
+                        "القطع المتبقية بالمخزن": s.remainingPieces ?? s.pieceCount ?? 0
+                    });
+                }
+            });
+        });
+
+        // ب) قائمة الزبائن الذين اشتروا من بضاعة هذا التاجر نفسه
+        const mSales = records.filter(r => r.merchantName === merchantName && (r.type.includes('إيراد') || r.type.includes('دين لنا')));
+        const mSalesFormatted = mSales.map(r => ({
+            "التاريخ": r.date || '---',
+            "اسم الزبون المشتري": r.personName || '---',
+            "اسم المنتج": r.productName || '---',
+            "الوزن المباع (كغم)": r.soldKg !== undefined ? r.soldKg : '---',
+            "عدد القطع المباعة": r.soldPieces !== undefined ? r.soldPieces : '---',
+            "إجمالي مبلغ البيع": r.amount || 0,
+            "حالة الدفع (الزبون)": r.status === 'معلق' ? 'دين على الزبون' : 'نقداً (مكتمل)',
+            "التفاصيل / البيان": r.details || '---'
+        }));
+
+        // ج) الملخص المالي والديون الباقية علينا للتاجر
+        const mRecords = records.filter(r => r.personName === merchantName || r.merchantName === merchantName);
+        const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتاجر)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
+        const totalPaid = mRecords.filter(r => (r.type === 'مصروف (-)' || r.type === 'دين علينا (لتاجر)') && r.status === 'مكتمل').reduce((s, r) => s + r.amount, 0);
+        const totalShipmentsCost = mShipments.reduce((s, sh) => s + (sh["التكلفة الإجمالية"] || 0), 0);
+
+        const summaryData = [
+            { "البيان": "اسم التاجر", "القيمة / المبلغ": merchantName },
+            { "البيان": "إجمالي عدد الشحنات الموردة", "القيمة / المبلغ": mShipments.length },
+            { "البيان": "إجمالي تكلفة البضائع المستلمة", "القيمة / المبلغ": totalShipmentsCost },
+            { "البيان": "إجمالي المبالغ المسددة والمدفوعة للتاجر", "القيمة / المبلغ": totalPaid },
+            { "البيان": "المبلغ المتبقي علينا للتاجر (الدين الحالي)", "القيمة / المبلغ": pendingDebt }
+        ];
+
+        // --- إنشاء الشيتات الثلاثة في ملف الإكسل ---
+        
+        // Sheet 1: ملخص الحساب والديون الباقية
+        const wsSummary = createFormattedSheet(summaryData, [{ wch: 40 }, { wch: 25 }]);
+        XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص والديون");
+
+        // Sheet 2: البضائع الشحنات المستلمة
+        const wsShipments = createFormattedSheet(mShipments.length > 0 ? mShipments : [{"ملاحظة": "لا توجد شحنات مسجلة لهذا التاجر"}], [
+            { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 20 }
+        ]);
+        XLSX.utils.book_append_sheet(wb, wsShipments, "البضائع المستلمة");
+
+        // Sheet 3: الزبائن والمبيعات
+        const wsSales = createFormattedSheet(mSalesFormatted.length > 0 ? mSalesFormatted : [{"ملاحظة": "لا توجد مبيعات مسجلة لبضاعة هذا التاجر"}], [
+            { wch: 14 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 20 }, { wch: 30 }
+        ]);
+        XLSX.utils.book_append_sheet(wb, wsSales, "الزبائن والمبيعات");
+
+        XLSX.writeFile(wb, `تقرير_التاجر_${merchantName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast(`تم تصدير تقرير التاجر (${merchantName}) بنجاح`);
+    }
+
+    // 2. تصدير تقرير الديون الشامل قسم إدارة الديون (شيت ديون التجار + شيت ديون الزبائن + ملخص)
+    function exportDebtsToExcel() {
+        const debts = records.filter(r => r.status === 'معلق');
+        if (debts.length === 0) {
+            showToast("لا توجد ديون معلقة للتصدير", "warning");
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        // ديون الزبائن (مبالغ لنا بحوزة الزبائن)
+        const customerDebts = debts.filter(r => r.type.includes('دين لنا')).map(r => ({
+            "التاريخ": r.date || '---',
+            "اسم الزبون": r.personName || '---',
+            "المبلغ المتبقي (لنا)": r.amount || 0,
+            "التاجر المورد للبضاعة": r.merchantName || '---',
+            "اسم المنتج": r.productName || '---',
+            "البيان / التفاصيل": r.details || '---'
+        }));
+
+        // ديون التجار (مبالغ علينا للتجار)
+        const merchantDebts = debts.filter(r => r.type.includes('دين علينا')).map(r => ({
+            "التاريخ": r.date || '---',
+            "اسم التاجر": r.personName || '---',
+            "المبلغ المتبقي (علينا)": r.amount || 0,
+            "اسم المنتج / الشحنة": r.details || '---',
+            "حالة الدين": "معلق"
+        }));
+
+        // حسابات الإجمالي
+        const totalCustDebt = customerDebts.reduce((sum, d) => sum + (d["المبلغ المتبقي (لنا)"] || 0), 0);
+        const totalMerchDebt = merchantDebts.reduce((sum, d) => sum + (d["المبلغ المتبقي (علينا)"] || 0), 0);
+
+        const summaryData = [
+            { "تصنيف الدين": "إجمالي ديون الزبائن (مبالغ لنا)", "المبلغ الكلي": totalCustDebt, "عدد المعاملات": customerDebts.length },
+            { "تصنيف الدين": "إجمالي ديون التجار (مبالغ علينا)", "المبلغ الكلي": totalMerchDebt, "عدد المعاملات": merchantDebts.length },
+            { "تصنيف الدين": "صافي موقف الديون (لنا - علينا)", "المبلغ الكلي": totalCustDebt - totalMerchDebt, "عدد المعاملات": customerDebts.length + merchantDebts.length }
+        ];
+
+        // Sheet 1: ملخص موقف الديون
+        const wsSummary = createFormattedSheet(summaryData, [{ wch: 40 }, { wch: 20 }, { wch: 15 }]);
+        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الديون");
+
+        // Sheet 2: شيت ديون الزبائن (لنا)
+        const wsCust = createFormattedSheet(customerDebts.length > 0 ? customerDebts : [{"ملاحظة": "لا توجد ديون على الزبائن"}], [
+            { wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 35 }
+        ]);
+        XLSX.utils.book_append_sheet(wb, wsCust, "ديون الزبائن (لنا)");
+
+        // Sheet 3: شيت ديون التجار (علينا)
+        const wsMerch = createFormattedSheet(merchantDebts.length > 0 ? merchantDebts : [{"ملاحظة": "لا توجد ديون للتجار"}], [
+            { wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 35 }, { wch: 15 }
+        ]);
+        XLSX.utils.book_append_sheet(wb, wsMerch, "ديون التجار (علينا)");
+
+        XLSX.writeFile(wb, `تقرير_الديون_الشامل_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast("تم تصدير تقرير الديون الشامل إلى Excel بنجاح");
+    }
+
+    // 3. تصدير المعاملات المكتملة من الواجهة الرئيسية
     function exportToExcel() {
         if (!records || records.length === 0) {
             showToast("لا توجد بيانات للتصدير", "warning");
             return;
         }
 
-        // قراءة قيم البحث والفلترة في الصفحة الرئيسية
         const searchQuery = document.getElementById('dashSearch')?.value.toLowerCase() || '';
         const dateFrom = document.getElementById('dashDateFrom')?.value || '';
         const dateTo = document.getElementById('dashDateTo')?.value || '';
@@ -1698,33 +1803,28 @@
         });
 
         const listToExport = filtered.length > 0 ? filtered : records.filter(r => r.status === 'مكتمل');
-        const wb = createExcelSheetWithFormat(listToExport, "المعاملات المكتملة");
+        const formattedData = listToExport.map(r => ({
+            "التاريخ": r.date || '---',
+            "الاسم / الجهة": r.personName || '---',
+            "نوع المعاملة": r.type || '---',
+            "المبلغ": r.amount !== undefined ? r.amount : 0,
+            "اسم التاجر المورد": r.merchantName || '---',
+            "اسم المنتج": r.productName || '---',
+            "الوزن (كغم)": r.soldKg !== undefined && r.soldKg !== null ? r.soldKg : '---',
+            "عدد القطع": r.soldPieces !== undefined && r.soldPieces !== null ? r.soldPieces : '---',
+            "البيان / التفاصيل": r.details || '---',
+            "حالة المعاملة": r.status || '---'
+        }));
+
+        const wb = XLSX.utils.book_new();
+        const ws = createFormattedSheet(formattedData, [
+            { wch: 14 }, { wch: 22 }, { wch: 22 }, { wch: 16 }, { wch: 22 }, { wch: 18 }, { wch: 15 }, { wch: 12 }, { wch: 35 }, { wch: 14 }
+        ]);
+        XLSX.utils.book_append_sheet(wb, ws, "المعاملات المكتملة");
+
         XLSX.writeFile(wb, `سجل_المعاملات_${new Date().toISOString().split('T')[0]}.xlsx`);
         showToast("تم تصدير سجل المعاملات إلى Excel بنجاح");
-    }
-
-    function exportDebtsToExcel() {
-        const debts = records.filter(r => r.status === 'معلق');
-        if (debts.length === 0) {
-            showToast("لا توجد ديون معلقة للتصدير", "warning");
-            return;
-        }
-        const wb = createExcelSheetWithFormat(debts, "سجل الديون");
-        XLSX.writeFile(wb, `جدول_الديون_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast("تم تصدير جدول الديون إلى Excel بنجاح");
-    }
-
-    function exportMerchantToExcel(merchantName) {
-        const mRecords = records.filter(r => r.personName === merchantName || r.merchantName === merchantName);
-        if (mRecords.length === 0) {
-            showToast("لا توجد بيانات لهذا التاجر للتصدير", "warning");
-            return;
-        }
-        const wb = createExcelSheetWithFormat(mRecords, merchantName);
-        XLSX.writeFile(wb, `تقرير_التاجر_${merchantName}.xlsx`);
-        showToast(`تم تصدير تقرير التاجر (${merchantName}) بنجاح`);
     }
 </script>
 </body>
 </html>
-
