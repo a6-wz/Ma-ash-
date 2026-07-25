@@ -1,0 +1,61 @@
+<!-- 1. أزرار التنقل (تم حذف الأرقام) -->
+<nav class="nav-tabs">
+  <button class="tab-btn active">الرئيسية والمالية</button>
+  <button class="tab-btn">المخزن والمنتجات</button>
+  <button class="tab-btn">التجار</button>
+  <button class="logout-btn">خروج</button>
+</nav>
+
+<!-- 3. نافذة تفاصيل المنتج (تم فصل الأزرار) -->
+<div class="modal">
+  <div class="modal-header">
+    <div class="modal-title-area">
+      <span class="category-badge">ورقيات</span>
+      <h2>لهانة</h2>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-delete">🗑️ حذف هذا المنتج</button>
+      <button class="btn-close">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. قسم الآلة الحاسبة وتعبئة سعر البيع -->
+<div class="calculator-section">
+  <label for="shipmentSelect">اختيار شحنة التاجر (تحديد البضاعة):</label>
+  <select id="shipmentSelect" class="form-control">
+    <option value="" disabled selected>اختر الشحنة...</option>
+    <!-- يتم تخزين سعر الشراء في data-buy-price -->
+    <option value="1" data-buy-price="500">تاجر: محمد صلاح | كيس (20)</option>
+    <option value="2" data-buy-price="750">تاجر: أحمد علي | كيس (50)</option>
+  </select>
+
+  <label for="sellPriceInput">سعر بيع الكيلو الأساسي:</label>
+  <input type="number" id="sellPriceInput" class="form-control" placeholder="مثلاً: 500">
+</div>
+
+<!-- 2. جدول المعاملات (واضح ومخصص للجوال) -->
+<div class="table-responsive">
+  <table class="transactions-table">
+    <thead>
+      <tr>
+        <th>التاريخ</th>
+        <th>الاسم</th>
+        <th>النوع</th>
+        <th>المبلغ</th>
+        <th>البيان</th>
+        <th>إجراء</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cell-date">2026-07-24</td>
+        <td>أحمد</td>
+        <td><span class="badge-type income">إيراد (+)</span></td>
+        <td class="cell-amount">+64950.00</td>
+        <td>بيع طماطة (60 كغم) - شامل نقل (750) وعمولة 7%</td>
+        <td><button class="btn-link-delete">حذف</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
