@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة تجارة الفواكه والخضراوات والديون</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- خط تجوال عالي الوضوح -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Tajawal', sans-serif; 
+            background: #f8fafc; 
+            color: #1e293b;
+        }
+        .ios-card { 
+            background: #ffffff; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.02); 
+            border: 1px solid #e2e8f0; 
+        }
+        .ios-input {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease-in-out;
+        }
+        .ios-input:focus {
+            background-color: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+        .active-tab { 
+            background-color: #2563eb; 
+            color: #ffffff !important; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        table th, table td {
+            white-space: nowrap !important;
+        }
+        .date-cell {
+            direction: ltr;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .badge-type {
+            display: inline-block;
+            white-space: nowrap;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            line-height: 1;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="p-3 md:p-6 min-h-screen">
+
+<!-- Datalists Dynamic Autocomplete for Customers & Merchants -->
+<datalist id="customersDatalist"></datalist>
+<datalist id="merchantsDatalist"></datalist>
+
+<!-- Auth Section -->
+<div id="authSection" class="max-w-md mx-auto my-12 ios-card p-8 text-center space-y-6">
+    <div class="space-y-2">
+        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto text-3xl shadow-sm border border-blue-100">🍏</div>
+        <h1 class="text-2xl font-black text-slate-900">سوق الفواكه والخضار</h1>
+        <p class="text-slate-500 text-xs font-semibold">قم بتسجيل الدخول لإدارة معاملاتك ومخزونك سحابياً</p>
+    </div>
+
+    <form id="authForm" class="space-y-4 text-right" onsubmit="event.preventDefault();">
+        <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">البريد الإلكتروني</label>
+            <input type="email" id="authEmail" class="w-full p-3.5 ios-input rounded-xl outline-none text-sm font-semibold" placeholder="example@mail.com" required>
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">كلمة السر</label>
+            <input type="password" id="authPassword" class="w-full p-3.5 ios-input rounded-xl outline-none text-sm font-semibold" placeholder="••••••••" required>
+        </div>
+
+        <p id="authError" class="text-xs text-red-600 hidden text-center font-bold bg-red-50 p-3 rounded-xl border border-red-100"></p>
+
+        <div class="flex gap-3 pt-2">
+            <button type="button" onclick="handleLogin()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition text-sm shadow-md shadow-blue-200 active:scale-[0.98]">تسجيل الدخول</button>
+            <button type="button" onclick="handleRegister()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3.5 rounded-xl transition text-sm active:scale-[0.98]">حساب جديد</button>
+        </div>
+    </form>
+</div>
+
+<!-- Main App Section -->
+<div id="appSection" class="max-w-7xl mx-auto space-y-6 hidden">
+    
+    <!-- Header -->
+    <header class="ios-card p-4 md:p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl border border-emerald-100 shadow-sm shrink-0">🛒</div>
+            <div>
+                <h1 class="text-base md:text-xl font-black text-slate-900">نظام إدارة الفواكه والخضراوات والديون</h1>
+                <p class="text-slate-500 text-xs mt-0.5 font-semibold">الحساب النشط: <span id="userDisplayEmail" class="font-bold text-blue-600"></span></p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+            <!-- Navigation Tabs -->
+            <div class="bg-slate-100 p-1 rounded-2xl flex gap-1 text-xs font-extrabold w-full md:w-auto overflow-x-auto">
+                <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="flex-1 md:flex-none px-4 py-2.5 rounded-xl text-slate-600 transition active-tab whitespace-nowrap">الرئيسية والمالية</button>
+                <button id="navInventoryBtn" onclick="switchTab('inventory')" class="flex-1 md:flex-none px-4 py-2.5 rounded-xl text-slate-600 transition whitespace-nowrap">المخزن والمنتجات</button>
+                <button id="navDebtsBtn" onclick="switchTab('debts')" class="flex-1 md:flex-none px-4 py-2.5 rounded-xl text-slate-600 transition whitespace-nowrap">قسم الديون 💳</button>
+                <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="flex-1 md:flex-none px-4 py-2.5 rounded-xl text-slate-600 transition whitespace-nowrap">التجار</button>
+            </div>
+            <button onclick="handleLogout()" class="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-3.5 py-2.5 rounded-xl font-bold transition border border-red-100 shrink-0">
+                خروج
+            </button>
+        </div>
+    </header>
+
+    <!-- VIEW 1: DASHBOARD & GENERAL TRANSACTIONS -->
+    <div id="viewDashboard" class="space-y-6">
+
+        <!-- KPI Summary Cards -->
+        <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+            <div class="ios-card p-4 border-r-4 border-emerald-500">
+                <p class="text-xs text-slate-500 font-bold">إجمالي الإيرادات</p>
+                <h3 id="totalIncome" class="text-base md:text-xl font-black text-emerald-600 mt-1">0.00</h3>
+            </div>
+            <div class="ios-card p-4 border-r-4 border-red-500">
+                <p class="text-xs text-slate-500 font-bold">إجمالي المصروفات</p>
+                <h3 id="totalExpense" class="text-base md:text-xl font-black text-red-600 mt-1">0.00</h3>
+            </div>
+            <div class="ios-card p-4 border-r-4 border-blue-500">
+                <p class="text-xs text-slate-500 font-bold">الصافي المالي</p>
+                <h3 id="netBalance" class="text-base md:text-xl font-black text-blue-600 mt-1">0.00</h3>
+            </div>
+            <div class="ios-card p-4 border-r-4 border-cyan-500">
+                <p class="text-xs text-slate-500 font-bold">ديون لنا (على زبائن)</p>
+                <h3 id="pendingUs" class="text-base md:text-xl font-black text-cyan-600 mt-1">0.00</h3>
+            </div>
+            <div class="ios-card p-4 border-r-4 border-amber-500 col-span-2 lg:col-span-1">
+                <p class="text-xs text-slate-500 font-bold">ديون علينا (لتجار)</p>
+                <h3 id="pendingThem" class="text-base md:text-xl font-black text-amber-600 mt-1">0.00</h3>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Form Section -->
+            <div class="lg:col-span-1 ios-card p-5 md:p-6 h-fit">
+                <h2 class="text-sm md:text-base font-black mb-4 text-slate-900 border-b pb-3 flex items-center gap-2">
+                    <span>📝</span> تسجيل معاملة مالية عامة
+                </h2>
+                <form id="transactionForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">التاريخ</label>
+                        <input type="date" id="date" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">الجهة / اسم الشخص</label>
+                        <input type="text" id="personName" list="customersDatalist" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" placeholder="اسم الزبون أو التاجر (تعبئة تلقائية)" required autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">نوع المعاملة</label>
+                        <select id="type" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold bg-white" required>
+                            <option value="إيراد (+)">إيراد (+)</option>
+                            <option value="مصروف (-)">مصروف (-)</option>
+                            <option value="دين لنا (على زبون)">دين لنا (على زبون)</option>
+                            <option value="دين علينا (لتاجر)">دين علينا (لتاجر)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">المبلغ الإجمالي</label>
+                        <input type="number" step="0.01" id="amount" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" placeholder="0.00" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">التفاصيل / البيان</label>
+                        <input type="text" id="details" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" placeholder="ملاحظات إضافية">
+                    </div>
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-blue-200 text-xs active:scale-[0.98]">حفظ المعاملة</button>
+                </form>
+            </div>
+
+            <!-- Transactions Table Section -->
+            <div class="lg:col-span-2">
+                <div class="ios-card p-5 md:p-6">
+                    <div class="flex justify-between items-center mb-4 border-b pb-3 gap-2">
+                        <h2 class="text-sm md:text-base font-black text-slate-900">سجل المعاملات المكتملة</h2>
+                        <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition shadow-sm active:scale-[0.98]">
+                            تصدير Excel 📊
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs">
+                            <thead class="text-slate-400 border-b border-slate-100 font-bold">
+                                <tr>
+                                    <th class="pb-3 px-2">التاريخ</th>
+                                    <th class="pb-3 px-2">الاسم</th>
+                                    <th class="pb-3 px-2">النوع</th>
+                                    <th class="pb-3 px-2">المبلغ</th>
+                                    <th class="pb-3 px-2">البيان</th>
+                                    <th class="pb-3 px-2 text-center">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsBody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 2: INVENTORY & PRODUCTS -->
+    <div id="viewInventory" class="space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <h2 class="text-base md:text-lg font-black text-slate-900">إدارة المخزن والمنتجات</h2>
+            <button onclick="openPackagingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs shadow-sm shadow-indigo-200 flex items-center gap-2 active:scale-[0.98]">
+                📦 إدارة أنواع التعبئة والتغليف (الأكياس / الصناديق)
+            </button>
+        </div>
+
+        <div>
+            <h2 class="text-sm md:text-base font-black mb-4 text-slate-800">قائمة المواد والمنتجات في المخزن</h2>
+            <div id="productsGrid" class="grid grid-cols-3 gap-2 md:gap-4"></div>
+        </div>
+
+        <div class="ios-card p-5 md:p-6">
+            <h2 class="text-sm md:text-base font-black mb-4 text-slate-900 border-b pb-3">إضافة منتج جديد للمخزن (فواكه / خضراوات)</h2>
+            <form id="addProductForm" class="grid grid-cols-1 md:grid-cols-3 gap-4" onsubmit="handleAddProduct(event)">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">اسم المادة / المنتج</label>
+                    <input type="text" id="newProductName" placeholder="مثلاً: خيار، طماطة، تفاح" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">التصنيف</label>
+                    <select id="newProductCategory" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold bg-white">
+                        <option value="خضراوات">خضراوات</option>
+                        <option value="فواكه">فواكه</option>
+                        <option value="ورقيات">ورقيات</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs shadow-sm shadow-emerald-200 active:scale-[0.98]">
+                        + إضافة المنتج للمخزن
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW 3: DEBTS MANAGEMENT -->
+    <div id="viewDebts" class="space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+                <h2 class="text-base md:text-lg font-black text-slate-900">💳 قسم إدارة الديون والمستحقات الشامل</h2>
+                <p class="text-xs text-slate-500 font-semibold mt-0.5">متابعة كافة الديون المستحقة للزبائن والتجار مع خيار تصدير ملف Excel الشامل</p>
+            </div>
+            <button onclick="exportDebtsToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs shadow-sm flex items-center gap-2 active:scale-[0.98]">
+                📊 تصدير تقرير الديون الشامل (Excel)
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- قسم 1: ديون الزبائن -->
+            <div class="ios-card p-5 md:p-6 border-t-4 border-cyan-500 space-y-4">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="font-black text-sm text-slate-900 flex items-center gap-2">
+                        <span>👤</span> ديون الزبائن (مبالغ لنا بحوزة العالم)
+                    </h3>
+                    <span id="tabCustomerDebtsTotal" class="font-black text-cyan-600 text-sm">0.00</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead class="text-slate-400 border-b border-slate-100 font-bold">
+                            <tr>
+                                <th class="pb-2.5 px-2">التاريخ</th>
+                                <th class="pb-2.5 px-2">اسم الزبون</th>
+                                <th class="pb-2.5 px-2">المبلغ</th>
+                                <th class="pb-2.5 px-2 text-center">إجراء التحصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerDebtsTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- قسم 2: ديون التجار -->
+            <div class="ios-card p-5 md:p-6 border-t-4 border-amber-500 space-y-4">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="font-black text-sm text-slate-900 flex items-center gap-2">
+                        <span>🏪</span> ديون التجار (مبالغ علينا للتجار)
+                    </h3>
+                    <span id="tabMerchantDebtsTotal" class="font-black text-amber-600 text-sm">0.00</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead class="text-slate-400 border-b border-slate-100 font-bold">
+                            <tr>
+                                <th class="pb-2.5 px-2">التاريخ</th>
+                                <th class="pb-2.5 px-2">اسم التاجر</th>
+                                <th class="pb-2.5 px-2">المبلغ</th>
+                                <th class="pb-2.5 px-2 text-center">إجراء السداد</th>
+                            </tr>
+                        </thead>
+                        <tbody id="merchantDebtsTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 4: MERCHANTS -->
+    <div id="viewMerchants" class="space-y-6 hidden">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+                <h2 class="text-base md:text-lg font-black text-slate-900">سجل التجار وحركات البيع والشحنات</h2>
+                <p class="text-xs text-slate-500 font-semibold mt-0.5">تتبع كافة البضائع المباعة والمتبقية لكل تاجر مع خيار تصدير تقرير كامل متعدد الصفحات (Excel Sheets)</p>
+            </div>
+        </div>
+
+        <div id="merchantsList" class="space-y-6"></div>
+    </div>
+
+    <!-- PACKAGING TYPES MODAL -->
+    <div id="packagingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-100">
+            <button onclick="closePackagingModal()" class="absolute top-5 left-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 transition z-10">✕</button>
+
+            <div class="border-b pb-3 pl-10">
+                <h2 class="text-base md:text-lg font-black text-slate-900">📦 إدارة أنواع التعبئة والتغليف (الأكياس / الصناديق)</h2>
+                <p class="text-slate-500 text-xs mt-1 font-semibold">أضف أنواع التعبئة مثل الأكياس والصناديق والكارتون مع تحديد سعة الكيلوغرامات وسعر التعبئة/الصندوق الواحد.</p>
+            </div>
+
+            <form id="addPackagingForm" onsubmit="handleAddPackagingType(event)" class="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100 space-y-3">
+                <h3 class="font-bold text-xs text-indigo-900">+ إضافة نوع تعبئة جديد</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">اسم التعبئة</label>
+                        <input type="text" id="pkgTypeName" placeholder="مثلاً: صندوق خشبي 15 كغم" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">سعر القطعة / الصندوق</label>
+                        <input type="number" step="0.01" id="pkgTypePrice" placeholder="مثلاً: 1000" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" value="0" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">السعة / الحجم (كغم)</label>
+                        <input type="number" step="0.1" id="pkgTypeCapacity" placeholder="مثلاً: 15" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
+                    </div>
+                </div>
+                <button type="submit" id="savePkgBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm active:scale-[0.98]">
+                    حفظ نوع التعبئة
+                </button>
+            </form>
+
+            <div>
+                <h3 class="font-bold text-xs text-slate-800 mb-2">أنواع التعبئة والتغليف المسجلة</h3>
+                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-50 text-slate-500 font-bold">
+                            <tr>
+                                <th class="p-3">اسم التعبئة</th>
+                                <th class="p-3">السعر للقطعة</th>
+                                <th class="p-3">السعة (كيلوغرام)</th>
+                                <th class="p-3 text-center">إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="packagingTypesTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRODUCT DETAILS & SALES CALCULATOR MODAL -->
+    <div id="productDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-100">
+            
+            <div class="relative border-b pb-4 pt-1">
+                <button onclick="closeProductModal()" class="absolute top-0 left-0 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 transition z-10">✕</button>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-12">
+                    <div>
+                        <span id="modalProductCategory" class="text-xs px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-100"></span>
+                        <h2 id="modalProductName" class="text-lg md:text-2xl font-black text-slate-900 mt-1"></h2>
+                    </div>
+                    <button onclick="deleteProduct()" class="w-fit text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1 shadow-sm">
+                        🗑️ حذف هذا المنتج
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Section 1: Add Merchant Delivery -->
+                <div class="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+                    <h3 class="font-black text-xs text-slate-800 border-b pb-2 flex items-center justify-between">
+                        <span>📦 توريد شحنة جديدة من تاجر</span>
+                    </h3>
+                    <form id="supplierForm" onsubmit="handleAddSupplierStock(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">اسم التاجر / المورد</label>
+                            <input type="text" id="supMerchantName" list="merchantsDatalist" placeholder="اسم التاجر (تعبئة تلقائية)" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required autocomplete="off">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">سعر شراء الكيلو</label>
+                                <input type="number" step="0.01" id="supBuyPrice" oninput="calculateSupTotalCost()" placeholder="مثلاً: 1000" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1 flex justify-between">
+                                    <span>نوع التعبئة</span>
+                                    <button type="button" onclick="openPackagingModal()" class="text-indigo-600 underline font-semibold">إضافة</button>
+                                </label>
+                                <select id="supPkgTypeSelect" onchange="calculateSupTotalCost()" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white" required></select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">عدد القطع الواردة</label>
+                                <input type="number" id="supPieceCount" oninput="calculateSupTotalCost()" placeholder="مثلاً: 20 قطعة" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">طريقة التسديد للتاجر</label>
+                                <select id="supPaymentMethod" class="w-full p-2.5 ios-input rounded-xl text-xs font-bold bg-white" required>
+                                    <option value="دين علينا (آجل)">دين علينا (آجل)</option>
+                                    <option value="نقداً (مصروف)">نقداً (مصروف مدفوع)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Live Cost Calculation Summary Box for Supplier Entry -->
+                        <div class="bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 text-xs space-y-1">
+                            <div class="flex justify-between text-indigo-900">
+                                <span>إجمالي الوزن الحسابي:</span>
+                                <span id="supCalcTotalKg" class="font-bold">0 كغم</span>
+                            </div>
+                            <div class="flex justify-between text-indigo-900 font-extrabold text-sm border-t border-indigo-200/60 pt-1">
+                                <span>إجمالي التكلفة الحسابية:</span>
+                                <span id="supCalcTotalCost">0.00</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm active:scale-[0.98]">
+                            تسجيل وارد التاجر والتكلفة
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Section 2: Sell Product Calculator -->
+                <div class="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 space-y-3">
+                    <h3 class="font-black text-xs text-blue-900 border-b border-blue-200/60 pb-2 flex items-center justify-between">
+                        <span>⚖️ آلة حاسبة وتسجيل عملية بيع</span>
+                    </h3>
+                    <form id="sellCalcForm" onsubmit="handleRegisterSale(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">اسم المشتري / الزبون</label>
+                            <input type="text" id="sellCustomerName" list="customersDatalist" placeholder="اكتب اسم الزبون أو اختر من القائمة" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required autocomplete="off">
+                        </div>
+
+                        <div class="p-2.5 bg-blue-100/50 rounded-xl border border-blue-200">
+                            <label class="block text-xs font-black text-blue-900 mb-1">اختيار شحنة التاجر (تحديد البضاعة)</label>
+                            <select id="sellShipmentSelect" onchange="handleShipmentSelectChange()" class="w-full p-2 ios-input rounded-lg text-xs font-bold bg-white" required></select>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">الكمية المباعة (كغم)</label>
+                                <input type="number" step="0.1" id="sellKg" oninput="calculateSalePrice()" placeholder="مثلاً: 40" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1 flex justify-between">
+                                    <span>نوع التعبئة</span>
+                                    <button type="button" onclick="openPackagingModal()" class="text-indigo-600 underline font-semibold">إضافة</button>
+                                </label>
+                                <select id="sellPkgTypeSelect" onchange="calculateSalePrice()" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white" required></select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">سعر بيع الكيلو الأساسي</label>
+                                <input type="number" step="0.01" id="sellPricePerKg" oninput="calculateSalePrice()" placeholder="مثلاً: 500" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">طريقة الدفع</label>
+                                <select id="sellPaymentType" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white">
+                                    <option value="نقد">نقداً (إيراد مكتمل)</option>
+                                    <option value="دين">بالدين (دين لنا على زبون)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Price Breakdown Calculation Summary Box -->
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-1.5 text-xs shadow-sm">
+                            <div class="flex justify-between text-slate-600">
+                                <span>عدد القطع التلقائي:</span>
+                                <span id="calcPieces" class="font-bold text-slate-900">0 قطعة</span>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>سعر البضاعة الأساسي:</span>
+                                <span id="calcBasePrice" class="font-bold text-slate-900">0.00</span>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>تكلفة التعبئة / الصناديق / الأكياس:</span>
+                                <span id="calcPkgCost" class="font-bold text-indigo-700">0.00</span>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>أجور النقل للقطعة (حسب الوزن):</span>
+                                <span id="calcTransportRate" class="font-bold text-slate-900">0</span>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>إجمالي أجور النقل:</span>
+                                <span id="calcTotalTransport" class="font-bold text-slate-900">0.00</span>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>عمولة البيع (7%):</span>
+                                <span id="calcCommission" class="font-bold text-slate-900">0.00</span>
+                            </div>
+                            <div class="flex justify-between text-emerald-700 font-extrabold border-t pt-2 text-xs md:text-sm">
+                                <span>الإجمالي المطلوب من الزبون:</span>
+                                <span id="calcGrandTotal">0.00</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm active:scale-[0.98]">
+                            حفظ عملية البيع والتحديث
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Supplier Deliveries Log for this Product -->
+            <div class="border-t pt-4">
+                <h3 class="font-black text-xs text-slate-800 mb-2">سجل التوريد والمخزون المتبقي لكل تاجر</h3>
+                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-50 text-slate-500 font-bold">
+                            <tr>
+                                <th class="p-2.5">التاريخ</th>
+                                <th class="p-2.5">التاجر</th>
+                                <th class="p-2.5">طريقة الدفع</th>
+                                <th class="p-2.5">سعر الكيلو</th>
+                                <th class="p-2.5">نوع التعبئة</th>
+                                <th class="p-2.5">التكلفة الكلية</th>
+                                <th class="p-2.5">الوارد الأصلي</th>
+                                <th class="p-2.5">المتبقي حالياً</th>
+                                <th class="p-2.5 text-center">إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productSuppliersTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyA43eyingrPD2yBjsW8llKOH6G8m6C2MGM",
+        authDomain: "ma-ash-4f076.firebaseapp.com",
+        projectId: "ma-ash-4f076",
+        storageBucket: "ma-ash-4f076.firebasestorage.app",
+        messagingSenderId: "87912345562",
+        appId: "1:87912345562:web:b14ddb3360014e0d84dae3",
+        measurementId: "G-HM0RS1Q1DZ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+        console.warn("Offline persistence warning:", err.code);
+    });
+
+    let currentUser = null;
+    let records = [];
+    let products = [];
+    let packagingTypes = [];
+    let currentSelectedProduct = null;
+
+    let unsubscribeRecords = null;
+    let unsubscribeProducts = null;
+    let unsubscribePackaging = null;
+
+    document.getElementById('date').valueAsDate = new Date();
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('userDisplayEmail').innerText = user.email;
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('appSection').classList.remove('hidden');
+            listenToDatabase();
+        } else {
+            currentUser = null;
+            records = [];
+            products = [];
+            packagingTypes = [];
+            if (unsubscribeRecords) unsubscribeRecords();
+            if (unsubscribeProducts) unsubscribeProducts();
+            if (unsubscribePackaging) unsubscribePackaging();
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('appSection').classList.add('hidden');
+        }
+    });
+
+    function translateError(code) {
+        switch(code) {
+            case 'auth/invalid-email': return 'البريد الإلكتروني غير صحيح.';
+            case 'auth/user-not-found': return 'لا يوجد حساب بهذا البريد.';
+            case 'auth/wrong-password': return 'كلمة السر غير صحيحة.';
+            case 'auth/invalid-credential': return 'بيانات الدخول غير صحيحة.';
+            case 'auth/email-already-in-use': return 'هذا البريد مستخدم بالفعل.';
+            case 'auth/weak-password': return 'كلمة السر ضعيفة (يجب أن تكون 6 أحرف على الأقل).';
+            default: return 'حدث خطأ: ' + code;
+        }
+    }
+
+    function handleLogin() {
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const errEl = document.getElementById('authError');
+        errEl.classList.add('hidden');
+
+        if(!email || !password) {
+            errEl.innerText = "يرجى إدخال البريد الإلكتروني وكلمة السر.";
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        auth.signInWithEmailAndPassword(email, password).catch(err => {
+            errEl.innerText = translateError(err.code);
+            errEl.classList.remove('hidden');
+        });
+    }
+
+    function handleRegister() {
+        const email = document.getElementById('authEmail').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const errEl = document.getElementById('authError');
+        errEl.classList.add('hidden');
+
+        if(!email || !password) {
+            errEl.innerText = "يرجى إدخال البريد الإلكتروني وكلمة السر.";
+            errEl.classList.remove('hidden');
+            return;
+        }
+
+        auth.createUserWithEmailAndPassword(email, password).catch(err => {
+            errEl.innerText = translateError(err.code);
+            errEl.classList.remove('hidden');
+        });
+    }
+
+    function handleLogout() {
+        auth.signOut();
+    }
+
+    function switchTab(tabName) {
+        document.getElementById('viewDashboard').classList.add('hidden');
+        document.getElementById('viewInventory').classList.add('hidden');
+        document.getElementById('viewDebts').classList.add('hidden');
+        document.getElementById('viewMerchants').classList.add('hidden');
+
+        document.getElementById('navDashboardBtn').classList.remove('active-tab');
+        document.getElementById('navInventoryBtn').classList.remove('active-tab');
+        document.getElementById('navDebtsBtn').classList.remove('active-tab');
+        document.getElementById('navMerchantsBtn').classList.remove('active-tab');
+
+        if (tabName === 'dashboard') {
+            document.getElementById('viewDashboard').classList.remove('hidden');
+            document.getElementById('navDashboardBtn').classList.add('active-tab');
+        } else if (tabName === 'inventory') {
+            document.getElementById('viewInventory').classList.remove('hidden');
+            document.getElementById('navInventoryBtn').classList.add('active-tab');
+        } else if (tabName === 'debts') {
+            document.getElementById('viewDebts').classList.remove('hidden');
+            document.getElementById('navDebtsBtn').classList.add('active-tab');
+            renderDebtsTab();
+        } else if (tabName === 'merchants') {
+            document.getElementById('viewMerchants').classList.remove('hidden');
+            document.getElementById('navMerchantsBtn').classList.add('active-tab');
+            renderMerchants();
+        }
+    }
+
+    function listenToDatabase() {
+        if (!currentUser) return;
+
+        if (unsubscribeRecords) unsubscribeRecords();
+        if (unsubscribeProducts) unsubscribeProducts();
+        if (unsubscribePackaging) unsubscribePackaging();
+
+        unsubscribeRecords = db.collection('users')
+            .doc(currentUser.uid)
+            .collection('records')
+            .orderBy('createdAt', 'desc')
+            .onSnapshot(snapshot => {
+                records = [];
+                snapshot.forEach(doc => {
+                    records.push({ docId: doc.id, ...doc.data() });
+                });
+                updateUI();
+                renderDebtsTab();
+                renderMerchants();
+                updateDatalists();
+            });
+
+        unsubscribeProducts = db.collection('users')
+            .doc(currentUser.uid)
+            .collection('products')
+            .orderBy('createdAt', 'desc')
+            .onSnapshot(snapshot => {
+                products = [];
+                snapshot.forEach(doc => {
+                    products.push({ docId: doc.id, ...doc.data() });
+                });
+                renderProducts();
+                renderMerchants();
+                updateDatalists();
+
+                if (currentSelectedProduct) {
+                    const freshProduct = products.find(p => p.docId === currentSelectedProduct.docId);
+                    if (freshProduct) {
+                        currentSelectedProduct = freshProduct;
+                        renderProductSuppliersTable();
+                        populateShipmentsDropdown();
+                    } else {
+                        closeProductModal();
+                    }
+                }
+            });
+
+        unsubscribePackaging = db.collection('users')
+            .doc(currentUser.uid)
+            .collection('packagingTypes')
+            .orderBy('createdAt', 'desc')
+            .onSnapshot(snapshot => {
+                packagingTypes = [];
+                snapshot.forEach(doc => {
+                    packagingTypes.push({ docId: doc.id, ...doc.data() });
+                });
+                renderPackagingTypes();
+                populatePackagingDropdowns();
+            });
+    }
+
+    function updateDatalists() {
+        const customersSet = new Set();
+        const merchantsSet = new Set();
+
+        records.forEach(r => {
+            if (r.personName && r.personName.trim() !== '') {
+                const cleanName = r.personName.trim();
+                if (r.type && (r.type.includes('تاجر') || r.type.includes('مصروف'))) {
+                    merchantsSet.add(cleanName);
+                } else {
+                    customersSet.add(cleanName);
+                }
+            }
+            if (r.merchantName && r.merchantName.trim() !== '') {
+                merchantsSet.add(r.merchantName.trim());
+            }
+        });
+
+        products.forEach(p => {
+            (p.suppliers || []).forEach(s => {
+                if (s.merchantName && s.merchantName.trim() !== '') {
+                    merchantsSet.add(s.merchantName.trim());
+                }
+            });
+        });
+
+        const custDatalist = document.getElementById('customersDatalist');
+        const merchDatalist = document.getElementById('merchantsDatalist');
+
+        if (custDatalist) {
+            custDatalist.innerHTML = Array.from(customersSet)
+                .map(name => `<option value="${name}">`)
+                .join('');
+        }
+
+        if (merchDatalist) {
+            merchDatalist.innerHTML = Array.from(merchantsSet)
+                .map(name => `<option value="${name}">`)
+                .join('');
+        }
+    }
+
+    document.getElementById('transactionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!currentUser) return;
+
+        const type = document.getElementById('type').value;
+        const isDebt = type.includes('دين');
+        const submitBtn = document.getElementById('submitBtn');
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = "جاري الحفظ...";
+
+        const newRecord = {
+            createdAt: Date.now(),
+            date: document.getElementById('date').value,
+            personName: document.getElementById('personName').value.trim(),
+            type: type,
+            amount: parseFloat(document.getElementById('amount').value) || 0,
+            details: document.getElementById('details').value || '---',
+            status: isDebt ? 'معلق' : 'مكتمل'
+        };
+
+        db.collection('users').doc(currentUser.uid).collection('records').add(newRecord)
+            .then(() => {
+                this.reset();
+                document.getElementById('date').valueAsDate = new Date();
+            })
+            .catch(err => alert("حدث خطأ أثناء الحفظ: " + err.message))
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "حفظ المعاملة";
+            });
+    });
+
+    function markAsPaid(docId) {
+        if (!currentUser) return;
+        db.collection('users').doc(currentUser.uid).collection('records').doc(docId).update({
+            status: 'مكتمل'
+        });
+    }
+
+    function deleteRecord(docId) {
+        if (!currentUser) return;
+        if (confirm("هل أنت تأكد من إزالة هذه المعاملة؟")) {
+            db.collection('users').doc(currentUser.uid).collection('records').doc(docId).delete();
+        }
+    }
+
+    function updateUI() {
+        const transactionsBody = document.getElementById('transactionsBody');
+        if (!transactionsBody) return;
+
+        transactionsBody.innerHTML = '';
+
+        let incomeSum = 0;
+        let expenseSum = 0;
+        let pendingUsSum = 0;
+        let pendingThemSum = 0;
+
+        records.forEach(r => {
+            if (r.status === 'مكتمل') {
+                if (r.type === 'إيراد (+)' || r.type === 'دين لنا (على زبون)') {
+                    incomeSum += r.amount;
+                } else if (r.type === 'مصروف (-)' || r.type === 'دين علينا (لتاجر)') {
+                    expenseSum += r.amount;
+                }
+            } else if (r.status === 'معلق') {
+                if (r.type === 'دين لنا (على زبون)') {
+                    pendingUsSum += r.amount;
+                } else if (r.type === 'دين علينا (لتاجر)') {
+                    pendingThemSum += r.amount;
+                }
+            }
+
+            if (r.status === 'مكتمل') {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="py-3 px-2 text-slate-500 font-semibold date-cell">${r.date}</td>
+                    <td class="py-3 px-2 font-bold text-slate-900">${r.personName}</td>
+                    <td class="py-3 px-2"><span class="badge-type ${getBadgeClass(r.type)}">${r.type}</span></td>
+                    <td class="py-3 px-2 font-black ${r.type.includes('إيراد') || r.type.includes('دين لنا') ? 'text-emerald-600' : 'text-red-600'}">
+                        ${r.type.includes('مصروف') || r.type.includes('دين علينا') ? '-' : '+'}${r.amount.toFixed(2)}
+                    </td>
+                    <td class="py-3 px-2 text-slate-500 font-semibold">${r.details || '---'}</td>
+                    <td class="py-3 px-2 text-center">
+                        <button onclick="deleteRecord('${r.docId}')" class="text-xs text-red-500 hover:text-red-700 font-bold transition">حذف</button>
+                    </td>
+                `;
+                transactionsBody.appendChild(tr);
+            }
+        });
+
+        const netBalance = incomeSum - expenseSum;
+
+        document.getElementById('totalIncome').innerText = `${incomeSum.toFixed(2)}`;
+        document.getElementById('totalExpense').innerText = `${expenseSum.toFixed(2)}`;
+        document.getElementById('netBalance').innerText = `${netBalance.toFixed(2)}`;
+        document.getElementById('netBalance').className = `text-base md:text-xl font-black mt-1 ${netBalance >= 0 ? 'text-blue-600' : 'text-red-600'}`;
+        document.getElementById('pendingUs').innerText = `${pendingUsSum.toFixed(2)}`;
+        document.getElementById('pendingThem').innerText = `${pendingThemSum.toFixed(2)}`;
+    }
+
+    function getBadgeClass(type) {
+        if (type.includes('إيراد')) return 'bg-emerald-100 text-emerald-800';
+        if (type.includes('مصروف')) return 'bg-red-100 text-red-800';
+        if (type.includes('دين لنا')) return 'bg-cyan-100 text-cyan-800';
+        return 'bg-amber-100 text-amber-800';
+    }
+
+    function renderDebtsTab() {
+        const custBody = document.getElementById('customerDebtsTableBody');
+        const merchBody = document.getElementById('merchantDebtsTableBody');
+
+        if (!custBody || !merchBody) return;
+
+        custBody.innerHTML = '';
+        merchBody.innerHTML = '';
+
+        let customerSum = 0;
+        let merchantSum = 0;
+
+        records.filter(r => r.status === 'معلق').forEach(r => {
+            if (r.type.includes('دين لنا')) {
+                customerSum += r.amount;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-2.5 px-2 text-slate-500 font-semibold date-cell">${r.date}</td>
+                    <td class="py-2.5 px-2 font-bold text-slate-900">${r.personName}</td>
+                    <td class="py-2.5 px-2 font-black text-cyan-600">${r.amount.toFixed(2)}</td>
+                    <td class="py-2.5 px-2 text-center">
+                        <button onclick="markAsPaid('${r.docId}')" class="text-xs px-3 py-1 rounded-lg bg-cyan-100 hover:bg-cyan-200 text-cyan-900 font-bold transition">
+                            ✓ تحصيل
+                        </button>
+                    </td>
+                `;
+                custBody.appendChild(tr);
+            } else if (r.type.includes('دين علينا')) {
+                merchantSum += r.amount;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-2.5 px-2 text-slate-500 font-semibold date-cell">${r.date}</td>
+                    <td class="py-2.5 px-2 font-bold text-slate-900">${r.personName}</td>
+                    <td class="py-2.5 px-2 font-black text-amber-600">${r.amount.toFixed(2)}</td>
+                    <td class="py-2.5 px-2 text-center">
+                        <button onclick="markAsPaid('${r.docId}')" class="text-xs px-3 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold transition">
+                            ✓ تسديد
+                        </button>
+                    </td>
+                `;
+                merchBody.appendChild(tr);
+            }
+        });
+
+        if (custBody.children.length === 0) {
+            custBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400">لا توجد ديون معلقة على زبائن.</td></tr>`;
+        }
+        if (merchBody.children.length === 0) {
+            merchBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400">لا توجد ديون معلقة لتجار.</td></tr>`;
+        }
+
+        document.getElementById('tabCustomerDebtsTotal').innerText = `${customerSum.toFixed(2)}`;
+        document.getElementById('tabMerchantDebtsTotal').innerText = `${merchantSum.toFixed(2)}`;
+    }
+
+    function exportDebtsToExcel() {
+        const customerDebts = records.filter(r => r.status === 'معلق' && r.type.includes('دين لنا')).map(r => ({
+            'تاريخ المعاملة': r.date,
+            'اسم الزبون': r.personName,
+            'نوع المعاملة': r.type,
+            'المبلغ المستحق': r.amount,
+            'التفاصيل / البيان': r.details
+        }));
+
+        const merchantDebts = records.filter(r => r.status === 'معلق' && r.type.includes('دين علينا')).map(r => ({
+            'تاريخ المعاملة': r.date,
+            'اسم التاجر': r.personName,
+            'نوع المعاملة': r.type,
+            'المبلغ المطلوب': r.amount,
+            'التفاصيل / البيان': r.details
+        }));
+
+        if (customerDebts.length === 0 && merchantDebts.length === 0) {
+            alert('لا توجد ديون معلقة حالياً لتصديرها!');
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        if (customerDebts.length > 0) {
+            const ws1 = XLSX.utils.json_to_sheet(customerDebts);
+            XLSX.utils.book_append_sheet(wb, ws1, "ديون الزبائن (لنا)");
+        }
+        if (merchantDebts.length > 0) {
+            const ws2 = XLSX.utils.json_to_sheet(merchantDebts);
+            XLSX.utils.book_append_sheet(wb, ws2, "ديون التجار (علينا)");
+        }
+
+        XLSX.writeFile(wb, `تقرير_الديون_الشامل_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    function openPackagingModal() {
+        populatePackagingDropdowns();
+        document.getElementById('packagingModal').classList.remove('hidden');
+    }
+
+    function closePackagingModal() {
+        document.getElementById('packagingModal').classList.add('hidden');
+    }
+
+    function handleAddPackagingType(e) {
+        e.preventDefault();
+        if (!currentUser) return;
+
+        const nameInput = document.getElementById('pkgTypeName');
+        const priceInput = document.getElementById('pkgTypePrice');
+        const capacityInput = document.getElementById('pkgTypeCapacity');
+        const saveBtn = document.getElementById('savePkgBtn');
+
+        const name = nameInput.value.trim();
+        const price = parseFloat(priceInput.value) || 0;
+        const capacity = parseFloat(capacityInput.value) || 0;
+
+        if (!name || capacity <= 0) {
+            alert("يرجى إدخال اسم نوع التعبئة والسعة بالكيلوغرام بشكل صحيح.");
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.innerText = "جاري الحفظ...";
+
+        const newPkg = {
+            name: name,
+            price: price,
+            capacityKg: capacity,
+            createdAt: Date.now()
+        };
+
+        db.collection('users').doc(currentUser.uid).collection('packagingTypes').add(newPkg)
+            .then(() => {
+                document.getElementById('addPackagingForm').reset();
+            })
+            .catch(err => alert("حدث خطأ أثناء الحفظ: " + err.message))
+            .finally(() => {
+                saveBtn.disabled = false;
+                saveBtn.innerText = "حفظ نوع التعبئة";
+            });
+    }
+
+    function deletePackagingType(docId) {
+        if (!currentUser) return;
+        if (confirm("هل تريد إزالة نوع التعبئة هذا؟")) {
+            db.collection('users').doc(currentUser.uid).collection('packagingTypes').doc(docId).delete();
+        }
+    }
+
+    function renderPackagingTypes() {
+        const tbody = document.getElementById('packagingTypesTableBody');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+
+        if (packagingTypes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-slate-400 font-semibold">لا توجد أنواع تعبئة مضافة.</td></tr>`;
+            return;
+        }
+
+        packagingTypes.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="p-3 font-bold text-slate-800">${p.name}</td>
+                <td class="p-3 font-semibold text-emerald-600">${p.price.toFixed(2)}</td>
+                <td class="p-3 font-black text-blue-600">${p.capacityKg} كغم</td>
+                <td class="p-3 text-center">
+                    <button onclick="deletePackagingType('${p.docId}')" class="text-xs text-red-500 hover:text-red-700 font-bold transition">حذف</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function populatePackagingDropdowns() {
+        const supSelect = document.getElementById('supPkgTypeSelect');
+        const sellSelect = document.getElementById('sellPkgTypeSelect');
+
+        if (!supSelect || !sellSelect) return;
+
+        let optionsHtml = `<option value="" data-capacity="0" data-price="0">-- اختر نوع التعبئة --</option>`;
+        packagingTypes.forEach(p => {
+            optionsHtml += `<option value="${p.docId}" data-capacity="${p.capacityKg}" data-price="${p.price}">${p.name} (${p.capacityKg} كغم - سعر الكيس/الصندوق ${p.price})</option>`;
+        });
+
+        supSelect.innerHTML = optionsHtml;
+        sellSelect.innerHTML = optionsHtml;
+    }
+
+    function handleAddProduct(e) {
+        e.preventDefault();
+        if (!currentUser) return;
+
+        const name = document.getElementById('newProductName').value.trim();
+        const category = document.getElementById('newProductCategory').value;
+
+        if (!name) return;
+
+        const newProd = {
+            name: name,
+            category: category,
+            suppliers: [],
+            createdAt: Date.now()
+        };
+
+        db.collection('users').doc(currentUser.uid).collection('products').add(newProd)
+            .then(() => {
+                document.getElementById('addProductForm').reset();
+            });
+    }
+
+    function deleteProduct() {
+        if (!currentUser || !currentSelectedProduct) return;
+        if (confirm(`هل أنت تأكد تماماً من حذف المنتج (${currentSelectedProduct.name}) بالكامل؟`)) {
+            db.collection('users').doc(currentUser.uid).collection('products').doc(currentSelectedProduct.docId).delete()
+                .then(() => {
+                    closeProductModal();
+                    alert("تم حذف المنتج بنجاح.");
+                });
+        }
+    }
+
+    function renderProducts() {
+        const grid = document.getElementById('productsGrid');
+        grid.innerHTML = '';
+
+        if (products.length === 0) {
+            grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400 text-xs font-semibold">لا توجد منتجات بالمخزن حالياً. قم بإضافة منتج جديد بالأسفل.</div>`;
+            return;
+        }
+
+        products.forEach(p => {
+            const suppliers = p.suppliers || [];
+            const totalRemainingPieces = suppliers.reduce((sum, s) => sum + (s.remainingPieces ?? s.pieceCount ?? 0), 0);
+
+            const card = document.createElement('div');
+            card.className = "ios-card p-2 sm:p-3 cursor-pointer hover:border-blue-500 hover:shadow-md transition-all duration-200 flex flex-col justify-between border border-slate-200 bg-white rounded-xl relative overflow-hidden min-h-[110px]";
+            card.onclick = () => openProductModal(p.docId);
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-start w-full gap-1">
+                    <span class="text-[9px] sm:text-[11px] px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold border border-slate-200/60 truncate">${p.category}</span>
+                    <span class="text-[9px] sm:text-xs text-blue-600 font-bold shrink-0">التفاصيل ←</span>
+                </div>
+                
+                <div class="my-auto text-center py-1">
+                    <h3 class="text-xs sm:text-base font-black text-slate-900 line-clamp-1">${p.name}</h3>
+                    <p class="text-[9px] sm:text-[11px] text-slate-400 font-semibold mt-0.5">الموردين: ${suppliers.length}</p>
+                </div>
+                
+                <div class="w-full pt-1.5 border-t border-slate-100 flex justify-between items-center text-[9px] sm:text-xs">
+                    <span class="text-slate-500 font-bold hidden sm:inline">المتبقي:</span>
+                    <span class="font-black px-1.5 py-0.5 rounded-md w-full sm:w-auto text-center ${totalRemainingPieces > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}">
+                        ${totalRemainingPieces > 0 ? totalRemainingPieces + ' قطعة' : 'نفذ'}
+                    </span>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function openProductModal(prodId) {
+        currentSelectedProduct = products.find(p => p.docId === prodId);
+        if (!currentSelectedProduct) return;
+
+        document.getElementById('modalProductName').innerText = currentSelectedProduct.name;
+        document.getElementById('modalProductCategory').innerText = currentSelectedProduct.category;
+
+        populatePackagingDropdowns();
+        renderProductSuppliersTable();
+        populateShipmentsDropdown();
+        calculateSupTotalCost();
+        calculateSalePrice();
+        document.getElementById('productDetailModal').classList.remove('hidden');
+    }
+
+    function closeProductModal() {
+        document.getElementById('productDetailModal').classList.add('hidden');
+        currentSelectedProduct = null;
+    }
+
+    function populateShipmentsDropdown() {
+        const select = document.getElementById('sellShipmentSelect');
+        select.innerHTML = '';
+
+        const suppliers = currentSelectedProduct?.suppliers || [];
+        const availableShipments = suppliers.filter(s => (s.remainingPieces ?? s.pieceCount ?? 0) > 0);
+
+        if (availableShipments.length === 0) {
+            select.innerHTML = `<option value="">-- نفذ مخزون هذا المنتج بالكامل --</option>`;
+            return;
+        }
+
+        let html = `<option value="">-- اختر شحنة التاجر / البضاعة --</option>`;
+        availableShipments.forEach(s => {
+            const rem = s.remainingPieces ?? s.pieceCount;
+            const remKg = rem * (s.pkgCapacityKg || 0);
+            html += `<option value="${s.id}" data-pkgtypeid="${s.pkgTypeId || ''}" data-pkgtypename="${s.pkgType}" data-capacity="${s.pkgCapacityKg || 0}" data-buyprice="${s.buyPrice || 0}">
+                تاجر: ${s.merchantName} | ${s.pkgType} | (المتبقي: ${rem} قطعة - ${remKg} كغم)
+            </option>`;
+        });
+        select.innerHTML = html;
+    }
+
+    function handleShipmentSelectChange() {
+        const shipmentSelect = document.getElementById('sellShipmentSelect');
+        const selectedOption = shipmentSelect.options[shipmentSelect.selectedIndex];
+
+        if (selectedOption && selectedOption.value) {
+            const pkgTypeId = selectedOption.dataset.pkgtypeid;
+            const buyPrice = selectedOption.dataset.buyprice;
+            const sellPkgSelect = document.getElementById('sellPkgTypeSelect');
+
+            if (pkgTypeId) {
+                sellPkgSelect.value = pkgTypeId;
+            } else {
+                for (let i = 0; i < sellPkgSelect.options.length; i++) {
+                    if (sellPkgSelect.options[i].text.includes(selectedOption.dataset.pkgtypename)) {
+                        sellPkgSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (buyPrice !== undefined && buyPrice !== null && buyPrice !== '') {
+                document.getElementById('sellPricePerKg').value = buyPrice;
+            }
+        }
+        calculateSalePrice();
+    }
+
+    function renderProductSuppliersTable() {
+        const tbody = document.getElementById('productSuppliersTableBody');
+        tbody.innerHTML = '';
+
+        const suppliers = currentSelectedProduct.suppliers || [];
+        if (suppliers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center p-3 text-slate-400 font-semibold">لا توجد شحنات مسجلة لهذا المنتج.</td></tr>`;
+            return;
+        }
+
+        suppliers.forEach(s => {
+            const remPieces = s.remainingPieces ?? s.pieceCount;
+            const calcTotalKg = s.totalKg || (s.pieceCount * (s.pkgCapacityKg || 0));
+            const calcRemKg = remPieces * (s.pkgCapacityKg || 0);
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="p-2.5 font-semibold text-slate-500 date-cell">${s.date || '---'}</td>
+                <td class="p-2.5 font-bold text-slate-800">${s.merchantName}</td>
+                <td class="p-2.5"><span class="badge-type ${s.paymentMethod?.includes('دين') ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}">${s.paymentMethod || 'عام'}</span></td>
+                <td class="p-2.5 text-emerald-600 font-bold">${s.buyPrice.toFixed(2)}</td>
+                <td class="p-2.5 font-semibold">${s.pkgType}</td>
+                <td class="p-2.5 font-black text-indigo-700">${(s.totalCost || 0).toFixed(2)}</td>
+                <td class="p-2.5 font-bold text-slate-600">${s.pieceCount} قطعة (${calcTotalKg} كغم)</td>
+                <td class="p-2.5 font-black ${remPieces > 0 ? 'text-emerald-600' : 'text-red-500'}">${remPieces} قطعة (${calcRemKg} كغم)</td>
+                <td class="p-2.5 text-center">
+                    <button onclick="deleteSupplierStock('${s.id}')" class="text-xs text-red-500 hover:text-red-700 font-bold transition">حذف</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function deleteSupplierStock(shipmentId) {
+        if (!currentUser || !currentSelectedProduct) return;
+
+        if (confirm("هل تريد إزالة هذه الشحنة/التوريد من حسابات هذا المنتج؟")) {
+            const updatedSuppliers = (currentSelectedProduct.suppliers || []).filter(s => s.id !== shipmentId);
+            
+            db.collection('users').doc(currentUser.uid).collection('products').doc(currentSelectedProduct.docId).update({
+                suppliers: updatedSuppliers
+            }).then(() => {
+                currentSelectedProduct.suppliers = updatedSuppliers;
+                renderProductSuppliersTable();
+                populateShipmentsDropdown();
+            });
+        }
+    }
+
+    function calculateSupTotalCost() {
+        const buyPrice = parseFloat(document.getElementById('supBuyPrice').value) || 0;
+        const count = parseFloat(document.getElementById('supPieceCount').value) || 0;
+        const pkgSelect = document.getElementById('supPkgTypeSelect');
+        const selectedOpt = pkgSelect ? pkgSelect.options[pkgSelect.selectedIndex] : null;
+        const capacity = selectedOpt ? (parseFloat(selectedOpt.dataset.capacity) || 0) : 0;
+
+        const totalKg = count * capacity;
+        const totalCost = totalKg * buyPrice;
+
+        document.getElementById('supCalcTotalKg').innerText = `${totalKg} كغم`;
+        document.getElementById('supCalcTotalCost').innerText = `${totalCost.toFixed(2)}`;
+
+        return { totalKg, totalCost };
+    }
+
+    function handleAddSupplierStock(e) {
+        e.preventDefault();
+        if (!currentUser || !currentSelectedProduct) return;
+
+        const merchantName = document.getElementById('supMerchantName').value.trim();
+        const buyPrice = parseFloat(document.getElementById('supBuyPrice').value) || 0;
+        const paymentMethod = document.getElementById('supPaymentMethod').value;
+        
+        const pkgSelect = document.getElementById('supPkgTypeSelect');
+        const pkgTypeId = pkgSelect.value;
+        const selectedOpt = pkgSelect.options[pkgSelect.selectedIndex];
+        const pkgType = selectedOpt ? selectedOpt.text : 'تغليف عام';
+        const pkgCapacityKg = parseFloat(selectedOpt?.dataset.capacity) || 0;
+        const pieceCount = parseInt(document.getElementById('supPieceCount').value) || 0;
+
+        const { totalKg, totalCost } = calculateSupTotalCost();
+
+        const shipmentId = 'shipment_' + Date.now();
+        const dateStr = new Date().toISOString().split('T')[0];
+
+        const newSupplierEntry = {
+            id: shipmentId,
+            date: dateStr,
+            merchantName: merchantName,
+            buyPrice: buyPrice,
+            pkgTypeId: pkgTypeId,
+            pkgType: pkgType,
+            pkgCapacityKg: pkgCapacityKg,
+            pieceCount: pieceCount,
+            totalKg: totalKg,
+            totalCost: totalCost,
+            paymentMethod: paymentMethod,
+            remainingPieces: pieceCount
+        };
+
+        const updatedSuppliers = currentSelectedProduct.suppliers ? [...currentSelectedProduct.suppliers, newSupplierEntry] : [newSupplierEntry];
+
+        const isDebt = paymentMethod.includes('دين');
+        const financialRecord = {
+            createdAt: Date.now(),
+            date: dateStr,
+            personName: merchantName,
+            type: isDebt ? 'دين علينا (لتاجر)' : 'مصروف (-)',
+            amount: totalCost,
+            details: `شراء شحنة ${currentSelectedProduct.name} (${pieceCount} قطعة - ${totalKg} كغم) [${paymentMethod}]`,
+            status: isDebt ? 'معلق' : 'مكتمل',
+            merchantName: merchantName,
+            shipmentId: shipmentId
+        };
+
+        const batch = db.batch();
+        const prodRef = db.collection('users').doc(currentUser.uid).collection('products').doc(currentSelectedProduct.docId);
+        const recordRef = db.collection('users').doc(currentUser.uid).collection('records').doc();
+
+        batch.update(prodRef, { suppliers: updatedSuppliers });
+        batch.set(recordRef, financialRecord);
+
+        batch.commit().then(() => {
+            currentSelectedProduct.suppliers = updatedSuppliers;
+            renderProductSuppliersTable();
+            populateShipmentsDropdown();
+            document.getElementById('supplierForm').reset();
+            calculateSupTotalCost();
+            alert(`تم تسجيل الشحنة وتثبيت المعاملة المالية (${paymentMethod}) بنجاح!`);
+        });
+    }
+
+    function calculateSalePrice() {
+        const sellKg = parseFloat(document.getElementById('sellKg').value) || 0;
+        const pricePerKg = parseFloat(document.getElementById('sellPricePerKg').value) || 0;
+
+        const pkgSelect = document.getElementById('sellPkgTypeSelect');
+        const selectedOption = pkgSelect ? pkgSelect.options[pkgSelect.selectedIndex] : null;
+
+        const pkgCapacity = selectedOption ? (parseFloat(selectedOption.dataset.capacity) || 0) : 0;
+        const pkgPricePerPiece = selectedOption ? (parseFloat(selectedOption.dataset.price) || 0) : 0;
+
+        let pieces = 0;
+        if (pkgCapacity > 0) {
+            pieces = Math.ceil(sellKg / pkgCapacity);
+        }
+
+        const basePrice = sellKg * pricePerKg;
+        const totalPkgCost = pieces * pkgPricePerPiece;
+
+        let transportRate = 0;
+        if (pkgCapacity > 0) {
+            transportRate = (pkgCapacity <= 20) ? 250 : 500;
+        }
+        const totalTransport = pieces * transportRate;
+        const commission = basePrice * 0.07;
+        const grandTotal = basePrice + totalPkgCost + totalTransport + commission;
+
+        document.getElementById('calcPieces').innerText = `${pieces} قطعة`;
+        document.getElementById('calcBasePrice').innerText = `${basePrice.toFixed(2)}`;
+        document.getElementById('calcPkgCost').innerText = `${totalPkgCost.toFixed(2)}`;
+        document.getElementById('calcTransportRate').innerText = `${transportRate}`;
+        document.getElementById('calcTotalTransport').innerText = `${totalTransport.toFixed(2)}`;
+        document.getElementById('calcCommission').innerText = `${commission.toFixed(2)}`;
+        document.getElementById('calcGrandTotal').innerText = `${grandTotal.toFixed(2)}`;
+
+        return { pieces, basePrice, totalPkgCost, pkgCapacity, transportRate, totalTransport, commission, grandTotal };
+    }
+
+    function handleRegisterSale(e) {
+        e.preventDefault();
+        if (!currentUser || !currentSelectedProduct) return;
+
+        const customerName = document.getElementById('sellCustomerName').value.trim();
+        const paymentType = document.getElementById('sellPaymentType').value;
+        const shipmentSelect = document.getElementById('sellShipmentSelect');
+        const selectedShipmentId = shipmentSelect.value;
+
+        if (!selectedShipmentId) {
+            alert('نفذ مخزون هذه الشحنة');
+            return;
+        }
+
+        const calcRes = calculateSalePrice();
+        const soldKg = parseFloat(document.getElementById('sellKg').value) || 0;
+
+        if (calcRes.grandTotal <= 0) {
+            alert('يرجى التأكد من اختيار نوع التعبئة وإدخال الكمية والسعر بشكل صحيح.');
+            return;
+        }
+
+        const suppliers = [...(currentSelectedProduct.suppliers || [])];
+        const shipmentIndex = suppliers.findIndex(s => s.id === selectedShipmentId);
+
+        if (shipmentIndex === -1) {
+            alert('نفذ مخزون هذه الشحنة');
+            return;
+        }
+
+        const currentShipment = suppliers[shipmentIndex];
+        const currentRemaining = currentShipment.remainingPieces ?? currentShipment.pieceCount;
+
+        if (currentRemaining <= 0 || calcRes.pieces > currentRemaining) {
+            alert('نفذ مخزون هذه الشحنة');
+            return;
+        }
+
+        suppliers[shipmentIndex].remainingPieces = currentRemaining - calcRes.pieces;
+
+        const isDebt = (paymentType === 'دين');
+        const recordType = isDebt ? 'دين لنا (على زبون)' : 'إيراد (+)';
+
+        const saleRecord = {
+            createdAt: Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            personName: customerName,
+            type: recordType,
+            amount: calcRes.grandTotal,
+            details: `بيع ${currentSelectedProduct.name} من بضاعة (${currentShipment.merchantName}) - الكمية: ${soldKg} كغم (${calcRes.pieces} قطعة)`,
+            status: isDebt ? 'معلق' : 'مكتمل',
+            merchantName: currentShipment.merchantName,
+            productName: currentSelectedProduct.name,
+            soldKg: soldKg,
+            soldPieces: calcRes.pieces,
+            pkgType: currentShipment.pkgType
+        };
+
+        const batch = db.batch();
+        const prodRef = db.collection('users').doc(currentUser.uid).collection('products').doc(currentSelectedProduct.docId);
+        const recordRef = db.collection('users').doc(currentUser.uid).collection('records').doc();
+
+        batch.update(prodRef, { suppliers: suppliers });
+        batch.set(recordRef, saleRecord);
+
+        batch.commit().then(() => {
+            document.getElementById('sellCalcForm').reset();
+            calculateSalePrice();
+            alert('تم تسجيل عملية البيع وتحديث المخزون بنجاح!');
+            closeProductModal();
+        }).catch(err => alert('حدث خطأ أثناء حفظ المعاملة: ' + err.message));
+    }
+
+    // --- قسم التجار المعدل مع حساب السداد الحقيقي من سجل المعاملات ---
+    function renderMerchants() {
+        const merchantsContainer = document.getElementById('merchantsList');
+        if (!merchantsContainer) return;
+        merchantsContainer.innerHTML = '';
+
+        const merchantNamesSet = new Set();
+        products.forEach(p => {
+            (p.suppliers || []).forEach(s => {
+                if (s.merchantName) merchantNamesSet.add(s.merchantName.trim());
+            });
+        });
+
+        records.forEach(r => {
+            if (r.merchantName) merchantNamesSet.add(r.merchantName.trim());
+        });
+
+        const merchantNames = Array.from(merchantNamesSet);
+
+        if (merchantNames.length === 0) {
+            merchantsContainer.innerHTML = `<div class="ios-card p-8 text-center text-slate-400 font-semibold text-xs">لا يوجد تجار مسجلين حالياً. قم بتوريد شحنات جديدة من التجار لتظهر هنا.</div>`;
+            return;
+        }
+
+        merchantNames.forEach(merchant => {
+            const merchantShipments = [];
+            products.forEach(p => {
+                (p.suppliers || []).forEach(s => {
+                    if (s.merchantName === merchant) {
+                        const totalKg = s.totalKg || (s.pieceCount * (s.pkgCapacityKg || 0));
+                        const remPieces = s.remainingPieces ?? s.pieceCount;
+                        const remKg = remPieces * (s.pkgCapacityKg || 0);
+
+                        merchantShipments.push({
+                            productName: p.name,
+                            category: p.category,
+                            calcTotalKg: totalKg,
+                            calcRemKg: remKg,
+                            ...s
+                        });
+                    }
+                });
+            });
+
+            // فلترة معاملات المبيعات للزبائن الفعليين فقط
+            const merchantSales = records.filter(r => 
+                (r.merchantName === merchant || (r.details && r.details.includes(`(${merchant})`))) &&
+                (r.type === 'إيراد (+)' || r.type === 'دين لنا (على زبون)')
+            );
+
+            // حساب الحركات المالية للتاجر (السداد والديون الحقيقية من records)
+            const merchantRecords = records.filter(r => 
+                r.personName === merchant || r.merchantName === merchant
+            );
+
+            const totalMerchantPendingDebt = merchantRecords
+                .filter(r => r.type === 'دين علينا (لتاجر)' && r.status === 'معلق')
+                .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+            const totalMerchantPaid = merchantRecords
+                .filter(r => (r.type === 'مصروف (-)' || r.type === 'دين علينا (لتاجر)') && r.status === 'مكتمل')
+                .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+            const totalImportedPieces = merchantShipments.reduce((sum, s) => sum + (s.pieceCount || 0), 0);
+            const totalImportedKg = merchantShipments.reduce((sum, s) => sum + (s.calcTotalKg || 0), 0);
+            const totalRemainingPieces = merchantShipments.reduce((sum, s) => sum + (s.remainingPieces ?? s.pieceCount ?? 0), 0);
+            const totalRemainingKg = merchantShipments.reduce((sum, s) => sum + (s.calcRemKg || 0), 0);
+            const totalSalesAmount = merchantSales.reduce((sum, r) => sum + (r.amount || 0), 0);
+            const totalSalesKg = merchantSales.reduce((sum, r) => sum + (parseFloat(r.soldKg) || 0), 0);
+
+            const card = document.createElement('div');
+            card.className = "ios-card p-5 md:p-6 space-y-4 border-t-4 border-indigo-500";
+            card.innerHTML = `
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🏪</span>
+                            <h3 class="text-base md:text-lg font-black text-slate-900">${merchant}</h3>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1 font-semibold flex flex-wrap gap-2">
+                            <span>الشحنات: <b class="text-slate-800">${merchantShipments.length}</b></span> |
+                            <span>المستلم: <b class="text-blue-600">${totalImportedPieces} قطعة (${totalImportedKg} كغم)</b></span> |
+                            <span>المتبقي: <b class="${totalRemainingPieces > 0 ? 'text-emerald-600' : 'text-red-500'}">${totalRemainingPieces} قطعة (${totalRemainingKg} كغم)</b></span> |
+                            <span>الدين الحالي المتبقي علينا: <b class="text-amber-600">${totalMerchantPendingDebt.toFixed(2)}</b></span> |
+                            <span>إجمالي المدفوع للتاجر: <b class="text-emerald-600">${totalMerchantPaid.toFixed(2)}</b></span>
+                        </p>
+                    </div>
+                    <button onclick="exportMerchantToExcel('${merchant}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs shadow-sm flex items-center gap-2 active:scale-[0.98]">
+                        📊 تصدير تقرير التاجر (Excel)
+                    </button>
+                </div>
+
+                <div>
+                    <h4 class="font-black text-xs text-slate-800 mb-2 flex items-center gap-1">
+                        <span>📦</span> <span>البضائع والشحنات المستلمة من التاجر:</span>
+                    </h4>
+                    <div class="overflow-x-auto rounded-xl border border-slate-100">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-50 text-slate-500 font-bold">
+                                <tr>
+                                    <th class="p-2.5">تاريخ التوريد</th>
+                                    <th class="p-2.5">المنتج</th>
+                                    <th class="p-2.5">نوع التعبئة</th>
+                                    <th class="p-2.5">طريقة الدفع</th>
+                                    <th class="p-2.5">سعر الكيلو</th>
+                                    <th class="p-2.5">التكلفة الكلية</th>
+                                    <th class="p-2.5">الوزن الكلي (كغم)</th>
+                                    <th class="p-2.5">العدد الأصلي</th>
+                                    <th class="p-2.5">المتبقي (قطع ووزن)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${merchantShipments.length === 0 ? '<tr><td colspan="9" class="p-3 text-center text-slate-400">لا توجد شحنات</td></tr>' : 
+                                    merchantShipments.map(s => `
+                                        <tr>
+                                            <td class="p-2.5 text-slate-500 font-semibold date-cell">${s.date || '---'}</td>
+                                            <td class="p-2.5 font-bold text-slate-800">${s.productName}</td>
+                                            <td class="p-2.5 font-semibold text-slate-600">${s.pkgType}</td>
+                                            <td class="p-2.5"><span class="badge-type ${s.paymentMethod?.includes('دين') ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}">${s.paymentMethod || 'عام'}</span></td>
+                                            <td class="p-2.5 font-bold text-emerald-600">${(s.buyPrice || 0).toFixed(2)}</td>
+                                            <td class="p-2.5 font-black text-indigo-700">${(s.totalCost || 0).toFixed(2)}</td>
+                                            <td class="p-2.5 font-black text-blue-600">${s.calcTotalKg} كغم</td>
+                                            <td class="p-2.5 font-bold text-slate-700">${s.pieceCount} قطعة</td>
+                                            <td class="p-2.5 font-black ${(s.remainingPieces ?? s.pieceCount) > 0 ? 'text-emerald-600' : 'text-red-500'}">
+                                                ${s.remainingPieces ?? s.pieceCount} قطعة (${s.calcRemKg} كغم)
+                                            </td>
+                                        </tr>
+                                    `).join('')
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-black text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>🛒</span> <span>مبيعات بضاعة التاجر</span>
+                        </h4>
+                        <div class="text-xs font-black text-emerald-600 flex gap-3">
+                            <span>إجمالي الوزن المباع: ${totalSalesKg} كغم</span>
+                            <span>مجموع المبيعات: ${totalSalesAmount.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-100">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-50 text-slate-500 font-bold">
+                                <tr>
+                                    <th class="p-2.5">التاريخ</th>
+                                    <th class="p-2.5">اسم الزبون</th>
+                                    <th class="p-2.5">نوع المعاملة</th>
+                                    <th class="p-2.5">الوزن المباع (كغم)</th>
+                                    <th class="p-2.5">المبلغ الإجمالي</th>
+                                    <th class="p-2.5">تفاصيل الشحنة والكمية</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${merchantSales.length === 0 ? '<tr><td colspan="6" class="p-3 text-center text-slate-400">لا توجد مبيعات زبائن مسجلة من بضاعة هذا التاجر</td></tr>' : 
+                                    merchantSales.map(r => `
+                                        <tr>
+                                            <td class="p-2.5 text-slate-500 font-semibold date-cell">${r.date}</td>
+                                            <td class="p-2.5 font-bold text-slate-900">${r.personName}</td>
+                                            <td class="p-2.5"><span class="badge-type ${getBadgeClass(r.type)}">${r.type}</span></td>
+                                            <td class="p-2.5 font-black text-blue-600">${r.soldKg ? r.soldKg + ' كغم' : '---'}</td>
+                                            <td class="p-2.5 font-black text-emerald-600">${r.amount.toFixed(2)}</td>
+                                            <td class="p-2.5 text-slate-600 font-semibold">${r.details}</td>
+                                        </tr>
+                                    `).join('')
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            merchantsContainer.appendChild(card);
+        });
+    }
+
+    // --- دالة تصدير تقرير التاجر للـ Excel (المعدلة بحساب التسديدات الفعلية) ---
+    function exportMerchantToExcel(merchantName) {
+        const shipmentsData = [];
+        let totalShipmentsValue = 0;
+
+        products.forEach(p => {
+            (p.suppliers || []).forEach(s => {
+                if (s.merchantName === merchantName) {
+                    const totalKg = s.totalKg || (s.pieceCount * (s.pkgCapacityKg || 0));
+                    const cost = s.totalCost || (s.buyPrice * totalKg);
+                    totalShipmentsValue += cost;
+
+                    shipmentsData.push({
+                        'تاريخ التوريد': s.date || '---',
+                        'المنتج': p.name,
+                        'التصنيف': p.category,
+                        'نوع التعبئة': s.pkgType,
+                        'سعر شراء الكيلو': s.buyPrice,
+                        'طريقة التسديد الأولي': s.paymentMethod || 'غير محدد',
+                        'التكلفة الكلية': cost,
+                        'إجمالي الوزن (كغم)': totalKg,
+                        'العدد الوارد (قطع)': s.pieceCount,
+                        'المتبقي (قطع)': s.remainingPieces ?? s.pieceCount,
+                        'المتبقي (كغم)': (s.remainingPieces ?? s.pieceCount) * (s.pkgCapacityKg || 0)
+                    });
+                }
+            });
+        });
+
+        // 1. حساب الديون المعلقة حالياً (المستحقة ولم تُسدد بعد)
+        const merchantRecords = records.filter(r => 
+            r.personName === merchantName || r.merchantName === merchantName
+        );
+
+        const totalDebtPending = merchantRecords
+            .filter(r => r.type === 'دين علينا (لتاجر)' && r.status === 'معلق')
+            .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+        // 2. حساب إجمالي المدفوع نقداً (يشمل الشحنات المدفوعة كاش + عمليات التسديد المسجلة)
+        const totalCashPaid = merchantRecords
+            .filter(r => (r.type === 'مصروف (-)' || r.type === 'دين علينا (لتاجر)') && r.status === 'مكتمل')
+            .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+        // 3. حساب المبيعات من بضاعة التاجر
+        const salesData = records.filter(r => 
+            (r.merchantName === merchantName || (r.details && r.details.includes(`(${merchantName})`))) &&
+            (r.type === 'إيراد (+)' || r.type === 'دين لنا (على زبون)')
+        ).map(r => ({
+            'تاريخ البيع': r.date,
+            'اسم الزبون / المشتري': r.personName,
+            'المنتج المباع': r.productName || 'غير محدد',
+            'الكمية المباعة (كغم)': r.soldKg || '---',
+            'عدد القطع المباعة': r.soldPieces || '---',
+            'نوع الدفع للزبون': r.type,
+            'المبلغ الإجمالي المطلق': r.amount,
+            'تفاصيل البيان': r.details,
+            'الحالة المالية للزبون': r.status
+        }));
+
+        const totalSalesValue = salesData.reduce((sum, item) => sum + (item['المبلغ الإجمالي المطلق'] || 0), 0);
+
+        // 4. جدول الملخص المالي الدقيق
+        const summaryData = [
+            { 'البيان المالي': 'اسم التاجر', 'القيمة / التفاصيل': merchantName },
+            { 'البيان المالي': 'إجمالي قيمة الشحنات المستلمة', 'القيمة / التفاصيل': totalShipmentsValue },
+            { 'البيان المالي': 'إجمالي المدفوع نقداً للتاجر (الكاش والتسديدات)', 'القيمة / التفاصيل': totalCashPaid },
+            { 'البيان المالي': 'إجمالي الديون المتبقية علينا للتاجر حالياً', 'القيمة / التفاصيل': totalDebtPending },
+            { 'البيان المالي': 'إجمالي قيمة المبيعات المباعة من بضاعته', 'القيمة / التفاصيل': totalSalesValue }
+        ];
+
+        if (shipmentsData.length === 0 && salesData.length === 0) {
+            alert('لا توجد بيانات مسجلة لتصديرها لهذا التاجر!');
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        const wsShipments = XLSX.utils.json_to_sheet(shipmentsData.length > 0 ? shipmentsData : [{'ملاحظة': 'لا توجد شحنات'}]);
+        XLSX.utils.book_append_sheet(wb, wsShipments, "الشحنات المستلمة");
+
+        const wsSales = XLSX.utils.json_to_sheet(salesData.length > 0 ? salesData : [{'ملاحظة': 'لا توجد مبيعات'}]);
+        XLSX.utils.book_append_sheet(wb, wsSales, "مبيعات الزبائن");
+
+        const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+        XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص المالي والديون");
+
+        XLSX.writeFile(wb, `تقرير_التاجر_${merchantName}_كامل_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    function exportToExcel() {
+        if (records.length === 0) {
+            alert('لا توجد بيانات لتصديرها حالياً!');
+            return;
+        }
+        const excelData = records.map(r => ({
+            'التاريخ': r.date,
+            'اسم الزبون / التاجر': r.personName,
+            'نوع المعاملة': r.type,
+            'المبلغ': r.amount,
+            'التفاصيل / البيان': r.details,
+            'حالة السداد': r.status
+        }));
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "سجل المعاملات والديون");
+        XLSX.writeFile(workbook, `سجل_المعاملات_المالية_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+</script>
+
+</body>
+</html>
+
