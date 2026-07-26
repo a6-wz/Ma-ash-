@@ -1007,7 +1007,7 @@
         slider.style.transform = `translateX(${targetOffset}px)`;
     }
 
-    // REAL-TIME DIRECT TOUCH DRAG SLIDER ENGINE
+    // REAL-TIME DIRECT TOUCH DRAG SLIDER ENGINE (REVERSED SWIPE DIRECTION)
     let touchSliderInitialized = false;
 
     function initTouchSlider() {
@@ -1064,16 +1064,16 @@
 
                 let effectiveDelta = deltaX;
                 // إعطاء تأثير مقاومة مرنة (مطاطي) عند الوصول لطرف القائمة الأولى أو الأخيرة
-                if (currentTabIdx === 0 && deltaX > 0) {
+                if (currentTabIdx === 0 && deltaX < 0) {
                     effectiveDelta = deltaX * 0.25;
-                } else if (currentTabIdx === mainTabs.length - 1 && deltaX < 0) {
+                } else if (currentTabIdx === mainTabs.length - 1 && deltaX > 0) {
                     effectiveDelta = deltaX * 0.25;
                 }
 
                 currentDeltaX = effectiveDelta;
                 const width = viewport.clientWidth;
                 const baseOffset = currentTabIdx * (width + gap);
-                slider.style.transform = `translateX(${baseOffset - currentDeltaX}px)`;
+                slider.style.transform = `translateX(${baseOffset + currentDeltaX}px)`;
             }
         };
 
@@ -1086,10 +1086,10 @@
                 const threshold = Math.min(width * 0.15, 65); // المسافة المطلوبة لإنهاء الانتقال
                 let newIdx = currentTabIdx;
 
-                if (currentDeltaX < -threshold && currentTabIdx < mainTabs.length - 1) {
-                    newIdx = currentTabIdx + 1; // سحب لليسار -> الانتقال للقائمة التالية
-                } else if (currentDeltaX > threshold && currentTabIdx > 0) {
-                    newIdx = currentTabIdx - 1; // سحب لليمين -> العودة للقائمة السابقة
+                if (currentDeltaX > threshold && currentTabIdx < mainTabs.length - 1) {
+                    newIdx = currentTabIdx + 1; // سحب لليمين -> الانتقال للقائمة التالية
+                } else if (currentDeltaX < -threshold && currentTabIdx > 0) {
+                    newIdx = currentTabIdx - 1; // سحب لليسار -> العودة للقائمة السابقة
                 }
 
                 switchTab(mainTabs[newIdx], true);
@@ -2015,17 +2015,20 @@
         const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتجار)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
         const totalPaid = mRecords.filter(r => (r.type === 'مصروف (-)' || r.type === 'سداد دين لتاجر') && r.status === 'مكتمل').reduce((s, r) => s + r.amount, 0);
 
-        const summaryData = [
-            { "اسم التاجر": merchantName, "الدين المتبقي للتاجر": pendingDebt, "إجمالي المسدد للتاجر": totalPaid, "العملة": currencySymbol }
+        const mSummaryData = [
+            { "اسم التاجر": merchantName, "البيان": "إجمالي الديون المعلقة علينا", "المبلغ": pendingDebt, "العملة": currencySymbol },
+            { "اسم التاجر": merchantName, "البيان": "إجمالي المبالغ المسددة والمدفوعة", "المبلغ": totalPaid, "العملة": currencySymbol },
+            { "اسم التاجر": merchantName, "البيان": "عدد الشحنات الموردة", "المبلغ": mShipments.length, "العملة": "شحنة" },
+            { "اسم التاجر": merchantName, "البيان": "عدد عمليات البيع", "المبلغ": mSales.length, "العملة": "عملية بيع" }
         ];
 
-        const wsSummary = createFormattedSheet(summaryData);
-        const wsShipments = createFormattedSheet(mShipments.length > 0 ? mShipments : [{"ملاحظة": "لا توجد شحنات مسجلة لهذا التاجر"}]);
-        const wsSales = createFormattedSheet(mSalesFormatted.length > 0 ? mSalesFormatted : [{"ملاحظة": "لا توجد حركات بيع من بضاعة هذا التاجر"}]);
+        const wsMSummary = createFormattedSheet(mSummaryData);
+        const wsMShipments = createFormattedSheet(mShipments.length > 0 ? mShipments : [{"ملاحظة": "لا توجد شحنات مسجلة لهذا التاجر"}]);
+        const wsMSales = createFormattedSheet(mSalesFormatted.length > 0 ? mSalesFormatted : [{"ملاحظة": "لا توجد مبيعات مسجلة لهذا التاجر"}]);
 
-        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص التاجر");
-        XLSX.utils.book_append_sheet(wb, wsShipments, "سجل شحنات التاجر");
-        XLSX.utils.book_append_sheet(wb, wsSales, "مبيعات بضاعة التاجر");
+        XLSX.utils.book_append_sheet(wb, wsMSummary, "ملخص التاجر");
+        XLSX.utils.book_append_sheet(wb, wsMShipments, "سجل الشحنات الواردة");
+        XLSX.utils.book_append_sheet(wb, wsMSales, "سجل مبيعات التاجر");
 
         XLSX.writeFile(wb, `تقرير_التاجر_${merchantName}_${new Date().toISOString().split('T')[0]}.xlsx`);
         showToast(`تم تصدير تقرير التاجر (${merchantName}) بنجاح 📊`);
@@ -2034,30 +2037,40 @@
     function exportDebtsToExcel() {
         const wb = XLSX.utils.book_new();
 
-        const pendingDebts = records.filter(r => r.status === 'معلق');
-
-        const customerDebts = pendingDebts.filter(r => r.type.includes('دين لنا')).map(r => ({
+        const customerDebts = records.filter(r => r.type.includes('دين لنا') && r.status === 'معلق').map(r => ({
             "التاريخ": r.date || '---',
             "اسم الزبون": r.personName || '---',
-            "المبلغ المتبقي (دين لنا)": r.amount || 0,
+            "نوع الدين": r.type,
+            "المبلغ المتبقي": r.amount || 0,
             "البيان والتفاصيل": r.details || '---'
         }));
 
-        const merchantDebts = pendingDebts.filter(r => r.type.includes('دين علينا')).map(r => ({
+        const merchantDebts = records.filter(r => r.type.includes('دين علينا') && r.status === 'معلق').map(r => ({
             "التاريخ": r.date || '---',
             "اسم التاجر": r.personName || '---',
-            "المبلغ المتبقي (دين علينا)": r.amount || 0,
+            "نوع الدين": r.type,
+            "المبلغ المتبقي": r.amount || 0,
             "البيان والتفاصيل": r.details || '---'
         }));
 
-        const wsCust = createFormattedSheet(customerDebts.length > 0 ? customerDebts : [{"ملاحظة": "لا توجد ديون على الزبائن"}]);
-        const wsMerch = createFormattedSheet(merchantDebts.length > 0 ? merchantDebts : [{"ملاحظة": "لا توجد ديون للتجار"}]);
+        const totalCust = customerDebts.reduce((sum, r) => sum + r["المبلغ المتبقي"], 0);
+        const totalMerch = merchantDebts.reduce((sum, r) => sum + r["المبلغ المتبقي"], 0);
 
+        const summaryData = [
+            { "نوع الدين": "إجمالي ديون الزبائن (مبالغ لنا بحوزة الزبائن)", "المبلغ الإجمالي": totalCust, "العملة": currencySymbol },
+            { "نوع الدين": "إجمالي ديون التجار (مبالغ علينا للتجار)", "المبلغ الإجمالي": totalMerch, "العملة": currencySymbol }
+        ];
+
+        const wsSummary = createFormattedSheet(summaryData);
+        const wsCust = createFormattedSheet(customerDebts.length > 0 ? customerDebts : [{"ملاحظة": "لا توجد ديون على زبائن حالياً"}]);
+        const wsMerch = createFormattedSheet(merchantDebts.length > 0 ? merchantDebts : [{"ملاحظة": "لا توجد ديون لتجار حالياً"}]);
+
+        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الديون");
         XLSX.utils.book_append_sheet(wb, wsCust, "ديون الزبائن (لنا)");
         XLSX.utils.book_append_sheet(wb, wsMerch, "ديون التجار (علينا)");
 
         XLSX.writeFile(wb, `تقرير_الديون_الشامل_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast("تم تصدير تقرير الديون بنجاح 📊");
+        showToast("تم تصدير تقرير الديون الشامل بنجاح 📊");
     }
 </script>
 </body>
