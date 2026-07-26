@@ -69,7 +69,7 @@
             width: 100%;
             align-items: flex-start;
             will-change: transform;
-            gap: 20px; /* مسافة فاصلة أنيقة بين القوائم لمنع التصاقها */
+            gap: 20px;
         }
 
         /* 🌙 DARK MODE OVERRIDES */
@@ -249,7 +249,7 @@
     <!-- Header -->
     <header class="ios-card p-3 md:p-5 flex flex-col gap-4">
         
-        <!-- Top Bar: Title + User Info + Dark Mode & Logout Actions -->
+        <!-- Top Bar -->
         <div class="flex items-center justify-between w-full gap-2">
             <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-10 h-10 md:w-12 md:h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-sm shrink-0">🍏</div>
@@ -261,7 +261,6 @@
                 </div>
             </div>
 
-            <!-- Top Actions: Theme Toggle + Logout Button -->
             <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <button onclick="toggleDarkMode()" class="theme-toggle-btn text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 px-2.5 py-1.5 rounded-xl transition border border-slate-200 dark:border-slate-700 shrink-0 flex items-center gap-1">
                     🌙 <span class="hidden sm:inline">الوضع الداكن</span><span class="sm:hidden">داكن</span>
@@ -290,24 +289,33 @@
             <div id="viewDashboard" class="w-full shrink-0 min-w-full space-y-6">
 
                 <!-- KPI Summary Cards -->
-                <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+                <section class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 md:gap-4">
                     <div class="ios-card p-4 border-r-4 border-emerald-500">
                         <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">إجمالي الإيرادات</p>
                         <h3 id="totalIncome" class="text-base md:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">0</h3>
                     </div>
                     <div class="ios-card p-4 border-r-4 border-red-500">
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">إجمالي المصروفات/الخسائر</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">المصروفات/الخسائر</p>
                         <h3 id="totalExpense" class="text-base md:text-xl font-black text-red-600 dark:text-red-400 mt-1">0</h3>
                     </div>
                     <div class="ios-card p-4 border-r-4 border-blue-500">
                         <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">الصافي المالي</p>
                         <h3 id="netBalance" class="text-base md:text-xl font-black text-blue-600 dark:text-blue-400 mt-1">0</h3>
                     </div>
+                    <!-- الخانات الجديدة ذات الأسماء المبسطة -->
+                    <div class="ios-card p-4 border-r-4 border-purple-500">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">أرباح المحل (7%)</p>
+                        <h3 id="totalProfit7" class="text-base md:text-xl font-black text-purple-600 dark:text-purple-400 mt-1">0</h3>
+                    </div>
+                    <div class="ios-card p-4 border-r-4 border-orange-500">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">أجور النقل</p>
+                        <h3 id="totalTransport" class="text-base md:text-xl font-black text-orange-600 dark:text-orange-400 mt-1">0</h3>
+                    </div>
                     <div class="ios-card p-4 border-r-4 border-cyan-500">
                         <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">ديون لنا (على زبائن)</p>
                         <h3 id="pendingUs" class="text-base md:text-xl font-black text-cyan-600 dark:text-cyan-400 mt-1">0</h3>
                     </div>
-                    <div class="ios-card p-4 border-r-4 border-amber-500 col-span-2 lg:col-span-1">
+                    <div class="ios-card p-4 border-r-4 border-amber-500 col-span-2 sm:col-span-1 lg:col-span-1">
                         <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">ديون علينا (لتجار)</p>
                         <h3 id="pendingThem" class="text-base md:text-xl font-black text-amber-600 dark:text-amber-400 mt-1">0</h3>
                     </div>
@@ -317,9 +325,16 @@
                 <div class="ios-card p-4 md:p-6 space-y-4">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 border-b dark:border-slate-700 pb-3 gap-3">
                         <h2 class="text-sm md:text-base font-black text-slate-900 dark:text-white">سجل المعاملات المكتملة</h2>
-                        <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition active:scale-[0.98]">
-                            تصدير Excel 📊
-                        </button>
+                        
+                        <!-- أزرار التصدير -->
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="openProfitExportModal()" class="flex items-center gap-1.5 text-xs bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2 rounded-xl font-bold transition active:scale-[0.98]">
+                                تصدير أرباح والنقل 📊
+                            </button>
+                            <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition active:scale-[0.98]">
+                                تصدير Excel الشامل 📊
+                            </button>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -459,6 +474,29 @@
                 <div id="merchantsList" class="space-y-6"></div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- MODAL: PROFIT & TRANSPORT EXCEL EXPORT (اختيار اليوم للتصوير) -->
+    <div id="profitExportModal" class="fixed inset-0 bg-slate-950/75 z-[85] flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-200 dark:border-slate-700">
+            <button onclick="closeProfitExportModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition">✕</button>
+            <h3 class="text-base font-black text-slate-900 dark:text-white border-b dark:border-slate-700 pb-2">📊 تصدير ملف أرباح الـ 7% والنقل (Excel)</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold">حدد اليوم المطلوب لإنشاء ملف Excel يحتوي على بيانات الربح الـ 7% وسعر النقل:</p>
+
+            <form onsubmit="handleExportProfitAndTransport(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">اختر اليوم المطلوب</label>
+                    <input type="date" id="exportTargetDate" class="w-full p-3 ios-input rounded-xl text-xs font-bold" required>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeProfitExportModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-3 rounded-xl text-xs transition">إلغاء</button>
+                    <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl text-xs transition active:scale-[0.98]">
+                        إنشاء ملف Excel 📊
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -894,7 +932,7 @@
         setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3500);
     }
 
-    // App State - Currency set fixed to د.ع
+    // App State
     const currencySymbol = 'د.ع';
     let currentUser = null;
     let records = [];
@@ -995,7 +1033,7 @@
         const slider = document.getElementById('viewsSlider');
         if (!viewport || !slider) return;
 
-        const gap = 20; // مسافة فاصلة بين القوائم
+        const gap = 20;
         const width = viewport.clientWidth;
         const targetOffset = tabIdx * (width + gap);
 
@@ -1007,7 +1045,7 @@
         slider.style.transform = `translateX(${targetOffset}px)`;
     }
 
-    // REAL-TIME DIRECT TOUCH DRAG SLIDER ENGINE
+    // TOUCH DRAG SLIDER ENGINE
     let touchSliderInitialized = false;
 
     function initTouchSlider() {
@@ -1211,6 +1249,181 @@
         });
     }
 
+    // UI & SUMMARIES UPDATE
+    function updateUI() {
+        const transactionsBody = document.getElementById('transactionsBody');
+        if (!transactionsBody) return;
+
+        transactionsBody.innerHTML = '';
+
+        let incomeSum = 0, expenseSum = 0, pendingUsSum = 0, pendingThemSum = 0;
+        let totalProfit7Sum = 0, totalTransportSum = 0;
+
+        records.forEach(r => {
+            // حساب أرباح المحل 7% وأجور النقل التراكمية
+            if (r.commission) totalProfit7Sum += (r.commission || 0);
+            if (r.transportCost) totalTransportSum += (r.transportCost || 0);
+
+            if (r.status === 'مكتمل') {
+                if (r.type === 'إيراد (+)' || r.type === 'تحصيل دين من زبون') {
+                    incomeSum += r.amount;
+                } else if (r.type === 'مصروف (-)' || r.type === 'خسارة تالف' || r.type === 'سداد دين لتاجر') {
+                    expenseSum += r.amount;
+                }
+            } else if (r.status === 'معلق') {
+                if (r.type === 'دين لنا (على زبون)') pendingUsSum += r.amount;
+                else if (r.type === 'دين علينا (لتجار)') pendingThemSum += r.amount;
+            }
+
+            if (r.status === 'مكتمل') {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 transition";
+                
+                const isOutflow = r.type.includes('مصروف') || r.type.includes('خسارة') || r.type.includes('سداد دين');
+
+                tr.innerHTML = `
+                    <td class="py-3 px-2 text-slate-500 dark:text-slate-400 font-semibold date-cell">${r.date}</td>
+                    <td class="py-3 px-2 font-bold text-slate-900 dark:text-white">${r.personName}</td>
+                    <td class="py-3 px-2"><span class="badge-type ${getBadgeClass(r.type)}">${r.type}</span></td>
+                    <td class="py-3 px-2 font-black ${isOutflow ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}">
+                        ${isOutflow ? '-' : '+'}${formatNumber(r.amount)}
+                    </td>
+                    <td class="py-3 px-2 text-slate-500 dark:text-slate-400 font-semibold">${r.details || '---'}</td>
+                    <td class="py-3 px-2 text-center flex items-center justify-center gap-2">
+                        <button onclick="openInvoiceModal('${r.docId}')" title="فاتورة" class="text-slate-600 dark:text-slate-400 hover:text-blue-600 font-bold">🧾</button>
+                        <button onclick="openEditModal('${r.docId}')" title="تعديل" class="text-slate-600 dark:text-slate-400 hover:text-amber-600 font-bold">✏️</button>
+                        <button onclick="deleteRecord('${r.docId}')" title="حذف" class="text-red-500 hover:text-red-700 font-bold">🗑️</button>
+                    </td>
+                `;
+                transactionsBody.appendChild(tr);
+            }
+        });
+
+        const netBalance = incomeSum - expenseSum;
+        document.getElementById('totalIncome').innerText = formatNumber(incomeSum);
+        document.getElementById('totalExpense').innerText = formatNumber(expenseSum);
+        document.getElementById('netBalance').innerText = formatNumber(netBalance);
+        
+        // تحديث الخانتين الجديدتين
+        if (document.getElementById('totalProfit7')) document.getElementById('totalProfit7').innerText = formatNumber(totalProfit7Sum);
+        if (document.getElementById('totalTransport')) document.getElementById('totalTransport').innerText = formatNumber(totalTransportSum);
+
+        document.getElementById('pendingUs').innerText = formatNumber(pendingUsSum);
+        document.getElementById('pendingThem').innerText = formatNumber(pendingThemSum);
+    }
+
+    // EXPORT PROFIT & TRANSPORT TO EXCEL SPECIFIC BY DATE
+    function openProfitExportModal() {
+        document.getElementById('exportTargetDate').valueAsDate = new Date();
+        document.getElementById('profitExportModal').classList.remove('hidden');
+    }
+
+    function closeProfitExportModal() {
+        document.getElementById('profitExportModal').classList.add('hidden');
+    }
+
+    function handleExportProfitAndTransport(e) {
+        e.preventDefault();
+        const selectedDate = document.getElementById('exportTargetDate').value;
+        if (!selectedDate) {
+            showToast("يرجى اختيار التاريخ المطلوب", "error");
+            return;
+        }
+
+        // تصفية السجلات لهذا اليوم والتي تحتوي على عمولة أو أجور نقل
+        const dayRecords = records.filter(r => r.date === selectedDate && ((r.commission && r.commission > 0) || (r.transportCost && r.transportCost > 0) || (r.details && (r.details.includes('ربح') || r.details.includes('نقل')))));
+
+        if (dayRecords.length === 0) {
+            showToast(`لا توجد عمليات بيع تحتوي على أرباح أو أجور نقل بتاريخ ${selectedDate}`, "warning");
+            return;
+        }
+
+        let totalProfitDay = 0;
+        let totalTransportDay = 0;
+
+        const excelData = dayRecords.map((r, i) => {
+            const p = r.commission || 0;
+            const t = r.transportCost || 0;
+            totalProfitDay += p;
+            totalTransportDay += t;
+
+            return {
+                "ت": i + 1,
+                "التاريخ": r.date,
+                "اسم الزبون": r.personName || "غير محدد",
+                "المنتج / البيان": r.productName || r.details || "بيع",
+                "ربح المحل (7%)": p,
+                "أجور النقل": t,
+                "المبلغ الإجمالي": r.amount || 0,
+                "طريقة الدفع": r.type.includes('دين') ? 'بالدين' : 'نقداً'
+            };
+        });
+
+        // إضافة سطر المجموع النهائي في القاع
+        excelData.push({
+            "ت": "",
+            "التاريخ": "",
+            "اسم الزبون": "المجموع الكلي اليومي",
+            "المنتج / البيان": "",
+            "ربح المحل (7%)": totalProfitDay,
+            "أجور النقل": totalTransportDay,
+            "المبلغ الإجمالي": "",
+            "طريقة الدفع": ""
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, `تقرير_${selectedDate}`);
+
+        XLSX.writeFile(workbook, `تقرير_أرباح_النقل_${selectedDate}.xlsx`);
+        closeProfitExportModal();
+        showToast("تم إنشاء وتنزيل ملف Excel بنجاح 📊");
+    }
+
+    function exportToExcel() {
+        if (records.length === 0) {
+            showToast("لا توجد سجلات للتصدير", "warning");
+            return;
+        }
+        const data = records.map((r, i) => ({
+            "ت": i + 1,
+            "التاريخ": r.date,
+            "الاسم": r.personName,
+            "النوع": r.type,
+            "المبلغ": r.amount,
+            "ربح (7%)": r.commission || 0,
+            "أجور النقل": r.transportCost || 0,
+            "البيان": r.details || '',
+            "الحالة": r.status
+        }));
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "المعاملات المالية");
+        XLSX.writeFile(workbook, `سجل_المعاملات_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast("تم تصدير سجل المعاملات إلى Excel بنجاح");
+    }
+
+    function exportDebtsToExcel() {
+        const debtRecords = records.filter(r => r.status === 'معلق');
+        if (debtRecords.length === 0) {
+            showToast("لا توجد ديون مسجلة للتصدير", "warning");
+            return;
+        }
+        const data = debtRecords.map((r, i) => ({
+            "ت": i + 1,
+            "التاريخ": r.date,
+            "اسم الشخص / الجهة": r.personName,
+            "نوع الدين": r.type,
+            "المبلغ المتبقي": r.amount,
+            "البيان": r.details || ''
+        }));
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "الديون");
+        XLSX.writeFile(workbook, `تقرير_الديون_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast("تم تصدير تقرير الديون إلى Excel بنجاح");
+    }
+
     // Partial Payment Logic
     function openPartialPaymentModal(docId, currentAmount, personName, type) {
         document.getElementById('payDocId').value = docId;
@@ -1249,7 +1462,6 @@
         }
 
         const batch = db.batch();
-
         const isCustomerDebt = record.type.includes('على زبون');
         const paymentType = isCustomerDebt ? 'تحصيل دين من زبون' : 'سداد دين لتاجر';
 
@@ -1311,7 +1523,7 @@
         });
     }
 
-    // Print & WhatsApp Invoice
+    // Invoice Print & WhatsApp
     function openInvoiceModal(docId) {
         const r = records.find(rec => rec.docId === docId);
         if (!r) return;
@@ -1338,58 +1550,6 @@
                      `💰 *المبلغ:* ${formatNumber(currentInvoiceData.amount)}\n` +
                      `📅 *التاريخ:* ${currentInvoiceData.date}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-    }
-
-    function updateUI() {
-        const transactionsBody = document.getElementById('transactionsBody');
-        if (!transactionsBody) return;
-
-        transactionsBody.innerHTML = '';
-
-        let incomeSum = 0, expenseSum = 0, pendingUsSum = 0, pendingThemSum = 0;
-
-        records.forEach(r => {
-            if (r.status === 'مكتمل') {
-                if (r.type === 'إيراد (+)' || r.type === 'تحصيل دين من زبون') {
-                    incomeSum += r.amount;
-                } else if (r.type === 'مصروف (-)' || r.type === 'خسارة تالف' || r.type === 'سداد دين لتاجر') {
-                    expenseSum += r.amount;
-                }
-            } else if (r.status === 'معلق') {
-                if (r.type === 'دين لنا (على زبون)') pendingUsSum += r.amount;
-                else if (r.type === 'دين علينا (لتجار)') pendingThemSum += r.amount;
-            }
-
-            if (r.status === 'مكتمل') {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 transition";
-                
-                const isOutflow = r.type.includes('مصروف') || r.type.includes('خسارة') || r.type.includes('سداد دين');
-
-                tr.innerHTML = `
-                    <td class="py-3 px-2 text-slate-500 dark:text-slate-400 font-semibold date-cell">${r.date}</td>
-                    <td class="py-3 px-2 font-bold text-slate-900 dark:text-white">${r.personName}</td>
-                    <td class="py-3 px-2"><span class="badge-type ${getBadgeClass(r.type)}">${r.type}</span></td>
-                    <td class="py-3 px-2 font-black ${isOutflow ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}">
-                        ${isOutflow ? '-' : '+'}${formatNumber(r.amount)}
-                    </td>
-                    <td class="py-3 px-2 text-slate-500 dark:text-slate-400 font-semibold">${r.details || '---'}</td>
-                    <td class="py-3 px-2 text-center flex items-center justify-center gap-2">
-                        <button onclick="openInvoiceModal('${r.docId}')" title="فاتورة" class="text-slate-600 dark:text-slate-400 hover:text-blue-600 font-bold">🧾</button>
-                        <button onclick="openEditModal('${r.docId}')" title="تعديل" class="text-slate-600 dark:text-slate-400 hover:text-amber-600 font-bold">✏️</button>
-                        <button onclick="deleteRecord('${r.docId}')" title="حذف" class="text-red-500 hover:text-red-700 font-bold">🗑️</button>
-                    </td>
-                `;
-                transactionsBody.appendChild(tr);
-            }
-        });
-
-        const netBalance = incomeSum - expenseSum;
-        document.getElementById('totalIncome').innerText = formatNumber(incomeSum);
-        document.getElementById('totalExpense').innerText = formatNumber(expenseSum);
-        document.getElementById('netBalance').innerText = formatNumber(netBalance);
-        document.getElementById('pendingUs').innerText = formatNumber(pendingUsSum);
-        document.getElementById('pendingThem').innerText = formatNumber(pendingThemSum);
     }
 
     function getBadgeClass(type) {
@@ -1443,6 +1603,47 @@
 
         document.getElementById('tabCustomerDebtsTotal').innerText = formatNumber(customerSum);
         document.getElementById('tabMerchantDebtsTotal').innerText = formatNumber(merchantSum);
+    }
+
+    function renderMerchants() {
+        const container = document.getElementById('merchantsList');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const searchQuery = (document.getElementById('merchantSearch')?.value || '').toLowerCase();
+        const merchantsMap = {};
+
+        products.forEach(p => {
+            (p.suppliers || []).forEach(s => {
+                const name = s.merchantName ? s.merchantName.trim() : 'غير محدد';
+                if (!merchantsMap[name]) {
+                    merchantsMap[name] = { name, totalCost: 0, totalShipments: 0 };
+                }
+                merchantsMap[name].totalCost += (s.totalCost || 0);
+                merchantsMap[name].totalShipments += 1;
+            });
+        });
+
+        const merchantNames = Object.keys(merchantsMap).filter(n => n.toLowerCase().includes(searchQuery));
+
+        if (merchantNames.length === 0) {
+            container.innerHTML = `<div class="p-8 text-center text-slate-400 font-bold">لا يوجد تجار مسجلون حالياً</div>`;
+            return;
+        }
+
+        merchantNames.forEach(name => {
+            const m = merchantsMap[name];
+            const div = document.createElement('div');
+            div.className = "ios-card p-4 md:p-5 space-y-3";
+            div.innerHTML = `
+                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-2">
+                    <h3 class="font-black text-sm md:text-base text-slate-900 dark:text-white">🏪 التاجر: ${m.name}</h3>
+                    <span class="text-xs font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-xl">إجمالي توريد البضائع: ${formatNumber(m.totalCost)}</span>
+                </div>
+                <div class="text-xs text-slate-500 font-semibold">عدد الشحنات الموردة: ${m.totalShipments}</div>
+            `;
+            container.appendChild(div);
+        });
     }
 
     // Packaging Modal Functions
@@ -1569,6 +1770,17 @@
     function closeProductModal() {
         document.getElementById('productDetailModal').classList.add('hidden');
         currentSelectedProduct = null;
+    }
+
+    function deleteProduct() {
+        if (!currentSelectedProduct) return;
+        showConfirmModal("حذف المنتج", `هل أنت تأكد من حذف المنتج (${currentSelectedProduct.name}) نهائياً من المخزن؟`, () => {
+            db.collection('users').doc(currentUser.uid).collection('products').doc(currentSelectedProduct.docId).delete()
+                .then(() => {
+                    closeProductModal();
+                    showToast("تم حذف المنتج من المخزن");
+                });
+        });
     }
 
     function populateShipmentsDropdown() {
@@ -1767,7 +1979,7 @@
         document.getElementById('calcCommission').innerText = formatNumber(commission);
         document.getElementById('calcGrandTotal').innerText = formatNumber(grandTotal);
 
-        return { pieces, grandTotal };
+        return { pieces, grandTotal, commission, totalTransport };
     }
 
     function handleRegisterSale(e) {
@@ -1781,7 +1993,10 @@
 
         const suppliers = [...(currentSelectedProduct.suppliers || [])];
         const idx = suppliers.findIndex(s => s.id === selectedShipmentId);
-        if (idx === -1) return;
+        if (idx === -1) {
+            showToast("يرجى اختيار الشحنة المصدر", "error");
+            return;
+        }
 
         const currentRem = suppliers[idx].remainingPieces ?? suppliers[idx].pieceCount;
         if (calcRes.pieces > currentRem) {
@@ -1790,7 +2005,18 @@
         }
 
         suppliers[idx].remainingPieces = currentRem - calcRes.pieces;
-        const isDebt = paymentType === 'دين';
+
+        const pricePerKg = parseFloat(document.getElementById('sellPricePerKg').value) || 0;
+        const basePrice = soldKg * pricePerKg;
+        const commission = basePrice * 0.07;
+
+        const pkgSelect = document.getElementById('sellPkgTypeSelect');
+        const selectedOption = pkgSelect ? pkgSelect.options[pkgSelect.selectedIndex] : null;
+        const pkgCapacity = selectedOption ? (parseFloat(selectedOption.dataset.capacity) || 0) : 0;
+        const transportRate = (pkgCapacity <= 20) ? 250 : 500;
+        const totalTransport = calcRes.pieces * transportRate;
+
+        const dateStr = new Date().toISOString().split('T')[0];
 
         const batch = db.batch();
         const prodRef = db.collection('users').doc(currentUser.uid).collection('products').doc(currentSelectedProduct.docId);
@@ -1799,299 +2025,25 @@
         batch.update(prodRef, { suppliers });
         batch.set(recordRef, {
             createdAt: Date.now(),
-            date: new Date().toISOString().split('T')[0],
+            date: dateStr,
             personName: customerName,
-            type: isDebt ? 'دين لنا (على زبون)' : 'إيراد (+)',
-            amount: calcRes.grandTotal,
-            details: `بيع ${currentSelectedProduct.name} من شحنة (${suppliers[idx].merchantName}) - ${soldKg} كغم (${calcRes.pieces} قطعة)`,
-            status: isDebt ? 'معلق' : 'مكتمل',
-            merchantName: suppliers[idx].merchantName,
+            merchantName: suppliers[idx].merchantName || '',
             productName: currentSelectedProduct.name,
-            soldKg, soldPieces: calcRes.pieces
+            type: paymentType === 'نقد' ? 'إيراد (+)' : 'دين لنا (على زبون)',
+            amount: calcRes.grandTotal,
+            commission: commission,
+            transportCost: totalTransport,
+            kg: soldKg,
+            pieces: calcRes.pieces,
+            details: `بيع ${currentSelectedProduct.name} (${soldKg} كغم / ${calcRes.pieces} قطعة) - (ربح: ${formatNumber(commission)}, نقل: ${formatNumber(totalTransport)})`,
+            status: paymentType === 'نقد' ? 'مكتمل' : 'معلق'
         });
 
         batch.commit().then(() => {
             document.getElementById('sellCalcForm').reset();
-            showToast("تم تسجيل البيع وتحديث المخزون بنجاح");
             closeProductModal();
+            showToast("تم تسجيل عملية البيع وتحديث البيانات بنجاح");
         });
-    }
-
-    function renderMerchants() {
-        const container = document.getElementById('merchantsList');
-        if (!container) return;
-        container.innerHTML = '';
-
-        const searchQuery = document.getElementById('merchantSearch')?.value.toLowerCase() || '';
-        const merchantsSet = new Set();
-
-        products.forEach(p => (p.suppliers || []).forEach(s => { if (s.merchantName) merchantsSet.add(s.merchantName.trim()); }));
-        records.forEach(r => { if (r.merchantName) merchantsSet.add(r.merchantName.trim()); });
-
-        const filteredMerchants = Array.from(merchantsSet).filter(m => m.toLowerCase().includes(searchQuery));
-
-        filteredMerchants.forEach(merchant => {
-            const mShipments = [];
-            products.forEach(p => (p.suppliers || []).forEach(s => {
-                if (s.merchantName === merchant) mShipments.push({ productName: p.name, ...s });
-            }));
-
-            const mSales = records.filter(r => r.merchantName === merchant && (r.type.includes('إيراد') || r.type.includes('دين لنا')));
-            const mRecords = records.filter(r => r.personName === merchant || r.merchantName === merchant);
-
-            const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتجار)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
-            const totalPaid = mRecords.filter(r => (r.type === 'مصروف (-)' || r.type === 'سداد دين لتاجر') && r.status === 'مكتمل').reduce((s, r) => s + r.amount, 0);
-
-            const card = document.createElement('div');
-            card.className = "ios-card p-5 space-y-3 border-t-4 border-indigo-500";
-            card.innerHTML = `
-                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
-                    <div>
-                        <h3 class="text-base font-black text-slate-900 dark:text-white">${merchant}</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">الدين المتبقي: <b class="text-amber-600 dark:text-amber-400">${formatNumber(pendingDebt)}</b> | المدفوع: <b class="text-emerald-600 dark:text-emerald-400">${formatNumber(totalPaid)}</b></p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="exportMerchantToExcel('${merchant}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">Excel 📊</button>
-                        <button onclick="deleteMerchant('${merchant}')" class="bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">🗑️ حذف التاجر</button>
-                    </div>
-                </div>
-                <div class="text-xs font-semibold text-slate-600 dark:text-slate-400">عدد الشحنات الموردة: ${mShipments.length} | إجمالي حركات البيع: ${mSales.length}</div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    function deleteMerchant(merchantName) {
-        if (!currentUser) return;
-        showConfirmModal("حذف التاجر", `هل أنت تأكد من حذف التاجر (${merchantName}) وكافة شحناته ومعاملاته المرتبطة به؟`, () => {
-            const batch = db.batch();
-
-            records.forEach(r => {
-                if (r.personName === merchantName || r.merchantName === merchantName) {
-                    const ref = db.collection('users').doc(currentUser.uid).collection('records').doc(r.docId);
-                    batch.delete(ref);
-                }
-            });
-
-            products.forEach(p => {
-                if (p.suppliers && p.suppliers.some(s => s.merchantName === merchantName)) {
-                    const updatedSuppliers = p.suppliers.filter(s => s.merchantName !== merchantName);
-                    const ref = db.collection('users').doc(currentUser.uid).collection('products').doc(p.docId);
-                    batch.update(ref, { suppliers: updatedSuppliers });
-                }
-            });
-
-            batch.commit().then(() => {
-                showToast(`تم حذف التاجر (${merchantName}) وجميع بياناته بنجاح`);
-            }).catch(err => showToast(err.message, 'error'));
-        });
-    }
-
-    function deleteProduct() {
-        if (!currentSelectedProduct) return;
-        showConfirmModal("حذف المنتج", `هل أنت تأكد من حذف المنتج (${currentSelectedProduct.name}) بالكامل من المخزن؟`, () => {
-            db.collection('users').doc(currentUser.uid).collection('products').doc(currentSelectedProduct.docId).delete().then(() => {
-                closeProductModal();
-                showToast("تم حذف المنتج بنجاح");
-            });
-        });
-    }
-
-    // EXCEL EXPORT SYSTEM
-    function createFormattedSheet(jsonData, customCols = []) {
-        const ws = XLSX.utils.json_to_sheet(jsonData);
-        ws['!views'] = [{ RTL: true }];
-        if (customCols.length > 0) {
-            ws['!cols'] = customCols;
-        } else if (jsonData.length > 0 && typeof jsonData[0] === 'object') {
-            const keys = Object.keys(jsonData[0]);
-            ws['!cols'] = keys.map(k => ({ wch: Math.max(k.length * 2.2, 18) }));
-        }
-        return ws;
-    }
-
-    function exportToExcel() {
-        if (records.length === 0) {
-            showToast("لا توجد سجلات للتصدير", "warning");
-            return;
-        }
-
-        const wb = XLSX.utils.book_new();
-
-        let totalIncome = 0;
-        let totalExpense = 0;
-
-        const completedRecords = records.filter(r => r.status === 'مكتمل');
-        const pendingRecords = records.filter(r => r.status === 'معلق' && r.amount > 0);
-
-        completedRecords.forEach(r => {
-            if (r.type.includes('إيراد') || r.type.includes('تحصيل دين')) {
-                totalIncome += r.amount || 0;
-            } else if (r.type.includes('مصروف') || r.type.includes('خسارة') || r.type.includes('سداد دين')) {
-                totalExpense += r.amount || 0;
-            }
-        });
-
-        const pendingUsSum = pendingRecords.filter(r => r.type.includes('دين لنا')).reduce((s, r) => s + r.amount, 0);
-        const pendingThemSum = pendingRecords.filter(r => r.type.includes('دين علينا')).reduce((s, r) => s + r.amount, 0);
-        const netBalance = totalIncome - totalExpense;
-
-        const summaryData = [
-            { "البيان المالي": "إجمالي الإيرادات والتحصيلات (+)", "المبلغ": totalIncome, "العملة": currencySymbol },
-            { "البيان المالي": "إجمالي المصروفات والسدادات (-)", "المبلغ": totalExpense, "العملة": currencySymbol },
-            { "البيان المالي": "الصافي المالي الفعلي", "المبلغ": netBalance, "العملة": currencySymbol },
-            { "البيان المالي": "إجمالي الديون لنا (على الزبائن)", "المبلغ": pendingUsSum, "العملة": currencySymbol },
-            { "البيان المالي": "إجمالي الديون علينا (لتجار)", "المبلغ": pendingThemSum, "العملة": currencySymbol },
-            { "البيان المالي": "عدد المعاملات المكتملة", "المبلغ": completedRecords.length, "العملة": "معاملة" },
-            { "البيان المالي": "عدد الديون المعلقة", "المبلغ": pendingRecords.length, "العملة": "دين معلق" }
-        ];
-
-        const allTransactionsFormatted = completedRecords.map(r => ({
-            "التاريخ": r.date || '---',
-            "اسم الشخص / الجهة": r.personName || '---',
-            "نوع المعاملة": r.type || '---',
-            "المبلغ": r.amount !== undefined ? r.amount : 0,
-            "التاجر المورد": r.merchantName || '---',
-            "اسم المنتج": r.productName || '---',
-            "الوزن (كغم)": (r.soldKg !== undefined && r.soldKg !== null) ? r.soldKg : '---',
-            "عدد القطع": (r.soldPieces !== undefined && r.soldPieces !== null) ? r.soldPieces : '---',
-            "البيان والتفاصيل": r.details || '---'
-        }));
-
-        const pendingFormatted = pendingRecords.map(r => ({
-            "التاريخ": r.date || '---',
-            "اسم الشخص / الجهة": r.personName || '---',
-            "نوع الدين": r.type || '---',
-            "المبلغ المتبقي الحالي": r.amount !== undefined ? r.amount : 0,
-            "التاجر المورد": r.merchantName || '---',
-            "الحالة": "معلق (غير مسدد)",
-            "البيان والتفاصيل": r.details || '---'
-        }));
-
-        const summaryCols = [{ wch: 32 }, { wch: 20 }, { wch: 15 }];
-        const allCols = [
-            { wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 16 }, { wch: 22 }, { wch: 18 }, { wch: 14 }, { wch: 12 }, { wch: 35 }
-        ];
-
-        const wsSummary = createFormattedSheet(summaryData, summaryCols);
-        const wsAll = createFormattedSheet(allTransactionsFormatted, allCols);
-        const wsPending = createFormattedSheet(pendingFormatted, allCols);
-
-        XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص المالي");
-        XLSX.utils.book_append_sheet(wb, wsAll, "المعاملات المكتملة");
-        XLSX.utils.book_append_sheet(wb, wsPending, "الديون المعلقة الحالية");
-
-        const dateStr = new Date().toISOString().split('T')[0];
-        XLSX.writeFile(wb, `تقرير_معاملات_معاش_${dateStr}.xlsx`);
-        showToast("تم تصدير تقرير Excel بنجاح");
-    }
-
-    function exportDebtsToExcel() {
-        const pendingRecords = records.filter(r => r.status === 'معلق' && r.amount > 0);
-
-        if (pendingRecords.length === 0) {
-            showToast("لا توجد ديون معلقة حالياً للتصدير", "warning");
-            return;
-        }
-
-        const wb = XLSX.utils.book_new();
-
-        const customerDebts = pendingRecords.filter(r => r.type.includes('دين لنا')).map(r => ({
-            "التاريخ": r.date || '---',
-            "اسم الزبون": r.personName || '---',
-            "نوع الدين": "دين لنا (على زبون)",
-            "المبلغ المتبقي لنا": r.amount || 0,
-            "التفاصيل / البيان": r.details || '---'
-        }));
-
-        const merchantDebts = pendingRecords.filter(r => r.type.includes('دين علينا')).map(r => ({
-            "التاريخ": r.date || '---',
-            "اسم التاجر": r.personName || '---',
-            "نوع الدين": "دين علينا (لتجار)",
-            "المبلغ المتبقي علينا": r.amount || 0,
-            "التفاصيل / البيان": r.details || '---'
-        }));
-
-        const totalCust = customerDebts.reduce((s, r) => s + r["المبلغ المتبقي لنا"], 0);
-        const totalMerch = merchantDebts.reduce((s, r) => s + r["المبلغ المتبقي علينا"], 0);
-
-        const debtSummary = [
-            { "البيان": "إجمالي ديون لنا (على زبائن)", "المبلغ المتبقي": totalCust, "العملة": currencySymbol },
-            { "البيان": "إجمالي ديون علينا (لتجار)", "المبلغ المتبقي": totalMerch, "العملة": currencySymbol },
-            { "البيان": "الصافي (لنا - علينا)", "المبلغ المتبقي": totalCust - totalMerch, "العملة": currencySymbol }
-        ];
-
-        const wsSummary = createFormattedSheet(debtSummary, [{ wch: 30 }, { wch: 20 }, { wch: 15 }]);
-        const wsCust = createFormattedSheet(customerDebts, [{ wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 35 }]);
-        const wsMerch = createFormattedSheet(merchantDebts, [{ wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 35 }]);
-
-        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الديون");
-        if (customerDebts.length > 0) XLSX.utils.book_append_sheet(wb, wsCust, "ديون الزبائن (لنا)");
-        if (merchantDebts.length > 0) XLSX.utils.book_append_sheet(wb, wsMerch, "ديون التجار (علينا)");
-
-        const dateStr = new Date().toISOString().split('T')[0];
-        XLSX.writeFile(wb, `تقرير_الديون_الشامل_${dateStr}.xlsx`);
-        showToast("تم تصدير تقرير الديون بنجاح");
-    }
-
-    function exportMerchantToExcel(merchantName) {
-        const mRecords = records.filter(r => r.personName === merchantName || r.merchantName === merchantName);
-        
-        const mShipments = [];
-        products.forEach(p => (p.suppliers || []).forEach(s => {
-            if (s.merchantName === merchantName) mShipments.push({ productName: p.name, ...s });
-        }));
-
-        if (mRecords.length === 0 && mShipments.length === 0) {
-            showToast("لا توجد بيانات مسجلة لهذا التاجر للتصدير", "warning");
-            return;
-        }
-
-        const wb = XLSX.utils.book_new();
-
-        const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتجار)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
-        const totalPaid = mRecords.filter(r => (r.type === 'مصروف (-)' || r.type === 'سداد دين لتاجر') && r.status === 'مكتمل').reduce((s, r) => s + r.amount, 0);
-        const totalCostShipments = mShipments.reduce((s, sh) => s + (sh.totalCost || 0), 0);
-
-        const summary = [
-            { "البيان": "اسم التاجر", "القيمة": merchantName },
-            { "البيان": "إجمالي تكلفة الشحنات الواردة", "القيمة": `${totalCostShipments} ${currencySymbol}` },
-            { "البيان": "إجمالي المبالغ المسددة للتاجر", "القيمة": `${totalPaid} ${currencySymbol}` },
-            { "البيان": "إجمالي الدين المتبقي علينا حالياً", "القيمة": `${pendingDebt} ${currencySymbol}` },
-            { "البيان": "عدد الشحنات الموردة", "القيمة": `${mShipments.length} شحنة` }
-        ];
-
-        const shipmentsData = mShipments.map(s => ({
-            "التاريخ": s.date || '---',
-            "اسم المنتج": s.productName,
-            "نوع التعبئة": s.pkgType || 'عام',
-            "سعر شراء الكيلو": s.buyPrice || 0,
-            "العدد الوارد (قطع)": s.pieceCount || 0,
-            "الوزن الكلي (كغم)": s.totalKg || 0,
-            "إجمالي التكلفة": s.totalCost || 0,
-            "العدد المتبقي بالمخزن": s.remainingPieces ?? s.pieceCount,
-            "طريقة الشراء": s.paymentMethod || '---'
-        }));
-
-        const recordsData = mRecords.map(r => ({
-            "التاريخ": r.date || '---',
-            "نوع المعاملة": r.type,
-            "المبلغ": r.amount || 0,
-            "الحالة": r.status === 'معلق' ? 'معلق (دين متبقي)' : 'مكتمل',
-            "البيان والتفاصيل": r.details || '---'
-        }));
-
-        const wsSummary = createFormattedSheet(summary, [{ wch: 32 }, { wch: 25 }]);
-        const wsShipments = createFormattedSheet(shipmentsData, [{ wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 16 }]);
-        const wsRecords = createFormattedSheet(recordsData, [{ wch: 14 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 35 }]);
-
-        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص التاجر");
-        if (shipmentsData.length > 0) XLSX.utils.book_append_sheet(wb, wsShipments, "الشحنات الموردة");
-        if (recordsData.length > 0) XLSX.utils.book_append_sheet(wb, wsRecords, "سجل الديون والمدفوعات");
-
-        const dateStr = new Date().toISOString().split('T')[0];
-        XLSX.writeFile(wb, `تقرير_التاجر_${merchantName}_${dateStr}.xlsx`);
-        showToast(`تم تصدير تقرير التاجر (${merchantName}) بنجاح`);
     }
 </script>
 </body>
