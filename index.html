@@ -23,20 +23,19 @@
     <style>
         body { 
             font-family: 'Tajawal', sans-serif; 
-            background: #f1f5f9; 
+            background: #f8fafc; 
             color: #0f172a;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
         .ios-card { 
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            border-radius: 24px; 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.03); 
+            background: #ffffff;
+            border-radius: 20px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); 
             border: 1px solid #e2e8f0; 
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .ios-card:hover {
-            box-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
         }
         .ios-input {
             background-color: #f8fafc;
@@ -46,36 +45,36 @@
         .ios-input:focus {
             background-color: #ffffff;
             border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
         .active-tab { 
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            background: #2563eb !important;
             color: #ffffff !important; 
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
-        /* 🌙 DARK MODE OVERRIDES */
+        /* 🌙 DARK MODE OVERRIDES (SOLID COLORS - NO GLASS) */
         html.dark body {
             background-color: #0f172a;
             color: #f8fafc;
         }
         html.dark .ios-card {
-            background: rgba(30, 41, 59, 0.9);
+            background-color: #1e293b;
             border-color: #334155;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
         }
         html.dark .ios-input {
-            background-color: #1e293b;
+            background-color: #0f172a;
             border-color: #334155;
             color: #f8fafc;
         }
         html.dark .ios-input:focus {
             background-color: #0f172a;
             border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
         }
         html.dark .bg-slate-100, html.dark .bg-slate-50, html.dark .bg-slate-100\/80 {
-            background-color: #1e293b !important;
+            background-color: #0f172a !important;
         }
         html.dark .bg-white {
             background-color: #1e293b !important;
@@ -100,7 +99,7 @@
             background-color: #475569 !important;
         }
         html.dark select {
-            background-color: #1e293b !important;
+            background-color: #0f172a !important;
             color: #f8fafc !important;
             border-color: #334155 !important;
         }
@@ -150,7 +149,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
             animation: slideDown 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
         }
         @keyframes slideDown {
@@ -183,30 +182,30 @@
 <datalist id="merchantsDatalist"></datalist>
 
 <!-- Auth Section -->
-<div id="authSection" class="max-w-md mx-auto my-12 ios-card p-8 text-center space-y-6 relative">
-    <button onclick="toggleDarkMode()" class="theme-toggle-btn absolute top-4 left-4 text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 px-3 py-1.5 rounded-xl transition">
-        🌙 الوضع الداكن
+<div id="authSection" class="max-w-md mx-auto my-8 md:my-12 ios-card p-6 md:p-8 text-center space-y-6 relative">
+    <button onclick="toggleDarkMode()" class="theme-toggle-btn absolute top-4 left-4 text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 px-3 py-1.5 rounded-xl transition border border-slate-200 dark:border-slate-600">
+        🌙 <span class="hidden sm:inline">الوضع الداكن</span><span class="sm:hidden">داكن</span>
     </button>
-    <div class="space-y-2 pt-2">
-        <div class="w-20 h-20 bg-gradient-to-tr from-blue-500 to-indigo-600 text-white rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-lg shadow-blue-200 dark:shadow-none">🍏</div>
-        <h1 class="text-2xl font-black text-slate-900 mt-3">معاش</h1>
-        <p class="text-slate-500 text-xs font-semibold">قم بتسجيل الدخول لإدارة معاملاتك ومخزونك سحابياً</p>
+    <div class="space-y-2 pt-4 sm:pt-2">
+        <div class="w-20 h-20 bg-emerald-500 text-white rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-md">🍏</div>
+        <h1 class="text-2xl font-black text-slate-900 dark:text-white mt-3">معاش</h1>
+        <p class="text-slate-500 dark:text-slate-400 text-xs font-semibold">قم بتسجيل الدخول لإدارة معاملاتك ومخزونك سحابياً</p>
     </div>
 
     <form id="authForm" class="space-y-4 text-right" onsubmit="event.preventDefault();">
         <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1.5">البريد الإلكتروني</label>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">البريد الإلكتروني</label>
             <input type="email" id="authEmail" class="w-full p-3.5 ios-input rounded-xl outline-none text-sm font-semibold" placeholder="example@mail.com" required>
         </div>
         <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1.5">كلمة السر</label>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">كلمة السر</label>
             <input type="password" id="authPassword" class="w-full p-3.5 ios-input rounded-xl outline-none text-sm font-semibold" placeholder="••••••••" required>
         </div>
 
         <p id="authError" class="text-xs text-red-600 hidden text-center font-bold bg-red-50 dark:bg-red-900/30 p-3 rounded-xl border border-red-100 dark:border-red-800"></p>
 
         <div class="flex gap-3 pt-2">
-            <button type="button" onclick="handleLogin()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition text-sm shadow-md shadow-blue-200 dark:shadow-none active:scale-[0.98]">تسجيل الدخول</button>
+            <button type="button" onclick="handleLogin()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition text-sm active:scale-[0.98]">تسجيل الدخول</button>
             <button type="button" onclick="handleRegister()" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold py-3.5 rounded-xl transition text-sm active:scale-[0.98]">حساب جديد</button>
         </div>
     </form>
@@ -216,44 +215,47 @@
 <div id="appSection" class="max-w-7xl mx-auto space-y-6 hidden">
     
     <!-- Header -->
-    <header class="ios-card p-4 md:p-5 flex flex-col lg:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-md shadow-emerald-200 dark:shadow-none shrink-0">🛒</div>
+    <header class="ios-card p-3 md:p-5 flex flex-col lg:flex-row justify-between items-center gap-3">
+        
+        <!-- Top Bar on Mobile: Title + User Info + Quick Actions -->
+        <div class="flex items-center justify-between w-full lg:w-auto gap-2">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 md:w-12 md:h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-sm shrink-0">🍏</div>
                 <div>
-                    <h1 class="text-base md:text-xl font-black text-slate-900">معاش</h1>
-                    <p class="text-slate-500 text-xs mt-0.5 font-semibold">الحساب: <span id="userDisplayEmail" class="font-bold text-blue-600 dark:text-blue-400"></span></p>
+                    <h1 class="text-base md:text-xl font-black text-slate-900 dark:text-white leading-tight">معاش</h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-[11px] md:text-xs font-semibold">الحساب: <span id="userDisplayEmail" class="font-bold text-blue-600 dark:text-blue-400"></span></p>
                 </div>
             </div>
 
-            <!-- Controls: Currency & Theme -->
-            <div class="flex items-center gap-2">
-                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <span class="text-xs font-bold text-slate-500 px-1">العملة:</span>
-                    <select id="currencySelect" onchange="changeCurrency(this.value)" class="bg-white dark:bg-slate-700 text-xs font-black p-1.5 rounded-lg outline-none cursor-pointer">
-                        <option value="د.ع">د.ع (دينار)</option>
-                        <option value="ر.س">ر.س (ريال)</option>
-                        <option value="$">$ (دولار)</option>
-                        <option value="ج.م">ج.م (جنيه)</option>
-                        <option value="€">€ (يورو)</option>
+            <!-- Currency & Mobile-optimized Theme Toggle Button -->
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-[10px] md:text-xs font-bold text-slate-500 px-1 hidden sm:inline">العملة:</span>
+                    <select id="currencySelect" onchange="changeCurrency(this.value)" class="bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-xs font-black p-1.5 rounded-lg outline-none cursor-pointer">
+                        <option value="د.ع">د.ع</option>
+                        <option value="ر.س">ر.س</option>
+                        <option value="$">$</option>
+                        <option value="ج.م">ج.م</option>
+                        <option value="€">€</option>
                     </select>
                 </div>
 
-                <button onclick="toggleDarkMode()" class="theme-toggle-btn text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 px-3 py-2 rounded-xl transition border border-slate-200 dark:border-slate-700 shrink-0">
-                    🌙 الوضع الداكن
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleDarkMode()" class="theme-toggle-btn text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 px-2.5 py-2 rounded-xl transition border border-slate-200 dark:border-slate-700 shrink-0 flex items-center gap-1">
+                    🌙 <span class="hidden sm:inline">الوضع الداكن</span><span class="sm:hidden">داكن</span>
                 </button>
             </div>
         </div>
         
-        <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end overflow-x-auto pb-1 lg:pb-0">
-            <!-- Navigation Tabs -->
-            <div class="bg-slate-100/80 dark:bg-slate-800 p-1.5 rounded-2xl flex gap-1 text-xs font-extrabold shrink-0 border border-slate-200 dark:border-slate-700">
-                <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 transition active-tab whitespace-nowrap">الرئيسية والمالية</button>
-                <button id="navInventoryBtn" onclick="switchTab('inventory')" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 transition whitespace-nowrap">المخزن والمنتجات</button>
-                <button id="navDebtsBtn" onclick="switchTab('debts')" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 transition whitespace-nowrap">قسم الديون 💳</button>
-                <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 transition whitespace-nowrap">التجار</button>
+        <!-- Navigation Tabs & Logout -->
+        <div class="flex items-center gap-2 w-full lg:w-auto justify-between lg:justify-end overflow-x-auto pb-1 lg:pb-0">
+            <div class="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl flex gap-1 text-xs font-extrabold shrink-0 border border-slate-200 dark:border-slate-700 w-full sm:w-auto overflow-x-auto">
+                <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition active-tab whitespace-nowrap text-center">الرئيسية والمالية</button>
+                <button id="navInventoryBtn" onclick="switchTab('inventory')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition whitespace-nowrap text-center">المخزن والمنتجات</button>
+                <button id="navDebtsBtn" onclick="switchTab('debts')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition whitespace-nowrap text-center">الديون 💳</button>
+                <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition whitespace-nowrap text-center">التجار</button>
             </div>
-            <button onclick="handleLogout()" class="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 px-3.5 py-2.5 rounded-xl font-bold transition border border-red-100 dark:border-red-900/50 shrink-0">
+            <button onclick="handleLogout()" class="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/60 px-3.5 py-2 rounded-xl font-bold transition border border-red-100 dark:border-red-900/50 shrink-0">
                 خروج
             </button>
         </div>
@@ -265,32 +267,32 @@
         <!-- KPI Summary Cards -->
         <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
             <div class="ios-card p-4 border-r-4 border-emerald-500">
-                <p class="text-xs text-slate-500 font-bold">إجمالي الإيرادات</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">إجمالي الإيرادات</p>
                 <h3 id="totalIncome" class="text-base md:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">0</h3>
             </div>
             <div class="ios-card p-4 border-r-4 border-red-500">
-                <p class="text-xs text-slate-500 font-bold">إجمالي المصروفات/الخسائر</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">إجمالي المصروفات/الخسائر</p>
                 <h3 id="totalExpense" class="text-base md:text-xl font-black text-red-600 dark:text-red-400 mt-1">0</h3>
             </div>
             <div class="ios-card p-4 border-r-4 border-blue-500">
-                <p class="text-xs text-slate-500 font-bold">الصافي المالي</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">الصافي المالي</p>
                 <h3 id="netBalance" class="text-base md:text-xl font-black text-blue-600 dark:text-blue-400 mt-1">0</h3>
             </div>
             <div class="ios-card p-4 border-r-4 border-cyan-500">
-                <p class="text-xs text-slate-500 font-bold">ديون لنا (على زبائن)</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">ديون لنا (على زبائن)</p>
                 <h3 id="pendingUs" class="text-base md:text-xl font-black text-cyan-600 dark:text-cyan-400 mt-1">0</h3>
             </div>
             <div class="ios-card p-4 border-r-4 border-amber-500 col-span-2 lg:col-span-1">
-                <p class="text-xs text-slate-500 font-bold">ديون علينا (لتجار)</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">ديون علينا (لتجار)</p>
                 <h3 id="pendingThem" class="text-base md:text-xl font-black text-amber-600 dark:text-amber-400 mt-1">0</h3>
             </div>
         </section>
 
         <!-- Transactions Table Section (Full Width) -->
-        <div class="ios-card p-5 md:p-6 space-y-4">
+        <div class="ios-card p-4 md:p-6 space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 border-b dark:border-slate-700 pb-3 gap-3">
-                <h2 class="text-sm md:text-base font-black text-slate-900">سجل المعاملات المكتملة</h2>
-                <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition shadow-sm active:scale-[0.98]">
+                <h2 class="text-sm md:text-base font-black text-slate-900 dark:text-white">سجل المعاملات المكتملة</h2>
+                <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition active:scale-[0.98]">
                     تصدير Excel 📊
                 </button>
             </div>
@@ -317,31 +319,31 @@
     <div id="viewInventory" class="space-y-6 hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-                <h2 class="text-base md:text-lg font-black text-slate-900">إدارة المخزن والمنتجات</h2>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">متابعة الكميات، تتبع التعبئة والتغليف، وتسجيل التالف</p>
+                <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">إدارة المخزن والمنتجات</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">متابعة الكميات، تتبع التعبئة والتغليف، وتسجيل التالف</p>
             </div>
-            <button onclick="openPackagingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs shadow-sm shadow-indigo-200 dark:shadow-none flex items-center gap-2 active:scale-[0.98]">
+            <button onclick="openPackagingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs flex items-center gap-2 active:scale-[0.98]">
                 📦 إدارة أنواع التعبئة والتغليف
             </button>
         </div>
 
         <div>
             <div class="flex justify-between items-center mb-3">
-                <h3 class="text-sm md:text-base font-black text-slate-800">قائمة المواد والمنتجات بالمخزن</h3>
+                <h3 class="text-sm md:text-base font-black text-slate-800 dark:text-slate-200">قائمة المواد والمنتجات بالمخزن</h3>
                 <input type="text" id="productSearch" oninput="renderProducts()" placeholder="🔍 بحث عن منتج..." class="p-2 ios-input rounded-xl text-xs font-semibold w-48 sm:w-64">
             </div>
             <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"></div>
         </div>
 
         <div class="ios-card p-5 md:p-6">
-            <h2 class="text-sm md:text-base font-black mb-4 text-slate-900 border-b dark:border-slate-700 pb-3">إضافة منتج جديد للمخزن</h2>
+            <h2 class="text-sm md:text-base font-black mb-4 text-slate-900 dark:text-white border-b dark:border-slate-700 pb-3">إضافة منتج جديد للمخزن</h2>
             <form id="addProductForm" class="grid grid-cols-1 md:grid-cols-3 gap-4" onsubmit="handleAddProduct(event)">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">اسم المادة / المنتج</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المادة / المنتج</label>
                     <input type="text" id="newProductName" placeholder="مثلاً: تفاح، طماطة، خيار" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">التصنيف</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التصنيف</label>
                     <select id="newProductCategory" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold bg-white dark:bg-slate-800">
                         <option value="خضراوات">خضراوات</option>
                         <option value="فواكه">فواكه</option>
@@ -350,7 +352,7 @@
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs shadow-sm shadow-emerald-200 dark:shadow-none active:scale-[0.98]">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs active:scale-[0.98]">
                         + إضافة المنتج للمخزن
                     </button>
                 </div>
@@ -362,10 +364,10 @@
     <div id="viewDebts" class="space-y-6 hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-                <h2 class="text-base md:text-lg font-black text-slate-900">💳 قسم إدارة الديون والتسديد الجزئي</h2>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">تسديد كلي أو جزئي لديون الزبائن والتجار مع تصدير التقرير</p>
+                <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">💳 قسم إدارة الديون والتسديد الجزئي</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">تسديد كلي أو جزئي لديون الزبائن والتجار مع تصدير التقرير</p>
             </div>
-            <button onclick="exportDebtsToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs shadow-sm flex items-center gap-2 active:scale-[0.98]">
+            <button onclick="exportDebtsToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs flex items-center gap-2 active:scale-[0.98]">
                 📊 تصدير تقرير الديون الشامل (Excel)
             </button>
         </div>
@@ -374,7 +376,7 @@
             <!-- ديون الزبائن -->
             <div class="ios-card p-5 md:p-6 border-t-4 border-cyan-500 space-y-4">
                 <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
-                    <h3 class="font-black text-sm text-slate-900 flex items-center gap-2">
+                    <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
                         <span>👤</span> ديون الزبائن (مبالغ لنا بحوزة العالم)
                     </h3>
                     <span id="tabCustomerDebtsTotal" class="font-black text-cyan-600 dark:text-cyan-400 text-sm">0</span>
@@ -397,7 +399,7 @@
             <!-- ديون التجار -->
             <div class="ios-card p-5 md:p-6 border-t-4 border-amber-500 space-y-4">
                 <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
-                    <h3 class="font-black text-sm text-slate-900 flex items-center gap-2">
+                    <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
                         <span>🏪</span> ديون التجار (مبالغ علينا للتجار)
                     </h3>
                     <span id="tabMerchantDebtsTotal" class="font-black text-amber-600 dark:text-amber-400 text-sm">0</span>
@@ -423,8 +425,8 @@
     <div id="viewMerchants" class="space-y-6 hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-                <h2 class="text-base md:text-lg font-black text-slate-900">سجل التجار وحركات الشحنات والمبيعات</h2>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">تتبع تفصيلي لكل تاجر مع أرباح البضائع والمدفوعات</p>
+                <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">سجل التجار وحركات الشحنات والمبيعات</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">تتبع تفصيلي لكل تاجر مع أرباح البضائع والمدفوعات</p>
             </div>
             <input type="text" id="merchantSearch" oninput="renderMerchants()" placeholder="🔍 بحث عن تاجر..." class="p-2.5 ios-input rounded-xl text-xs font-semibold w-full sm:w-64">
         </div>
@@ -433,39 +435,39 @@
     </div>
 
     <!-- PACKAGING TYPES MODAL -->
-    <div id="packagingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+    <div id="packagingModal" class="fixed inset-0 bg-slate-950/75 z-[70] flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-200 dark:border-slate-700">
             <button onclick="closePackagingModal()" class="absolute top-5 left-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition z-10">✕</button>
 
             <div class="border-b dark:border-slate-700 pb-3 pl-10">
-                <h2 class="text-base md:text-lg font-black text-slate-900">📦 إدارة أنواع التعبئة والتغليف (الأكياس / الصناديق)</h2>
-                <p class="text-slate-500 text-xs mt-1 font-semibold">أضف أنواع التعبئة مع تحديد السعة والسعر.</p>
+                <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">📦 إدارة أنواع التعبئة والتغليف (الأكياس / الصناديق)</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-xs mt-1 font-semibold">أضف أنواع التعبئة مع تحديد السعة والسعر.</p>
             </div>
 
-            <form id="addPackagingForm" onsubmit="handleAddPackagingType(event)" class="bg-indigo-50/60 dark:bg-indigo-950/40 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 space-y-3">
+            <form id="addPackagingForm" onsubmit="handleAddPackagingType(event)" class="bg-indigo-50 dark:bg-indigo-950/50 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900 space-y-3">
                 <h3 class="font-bold text-xs text-indigo-900 dark:text-indigo-300">+ إضافة نوع تعبئة جديد</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">اسم التعبئة</label>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم التعبئة</label>
                         <input type="text" id="pkgTypeName" placeholder="صندوق خشبي 15 كغم" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">سعر القطعة / الصندوق</label>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سعر القطعة / الصندوق</label>
                         <input type="number" step="0.01" id="pkgTypePrice" placeholder="1000" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" value="0" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">السعة / الحجم (كغم)</label>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">السعة / الحجم (كغم)</label>
                         <input type="number" step="0.1" id="pkgTypeCapacity" placeholder="15" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
                     </div>
                 </div>
-                <button type="submit" id="savePkgBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm active:scale-[0.98]">
+                <button type="submit" id="savePkgBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98]">
                     حفظ نوع التعبئة
                 </button>
             </form>
 
             <div>
-                <h3 class="font-bold text-xs text-slate-800 mb-2">أنواع التعبئة المسجلة</h3>
-                <div class="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
+                <h3 class="font-bold text-xs text-slate-800 dark:text-slate-200 mb-2">أنواع التعبئة المسجلة</h3>
+                <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
                     <table class="w-full text-right text-xs">
                         <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold">
                             <tr>
@@ -483,21 +485,21 @@
     </div>
 
     <!-- PRODUCT DETAILS & SALES CALCULATOR MODAL -->
-    <div id="productDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+    <div id="productDetailModal" class="fixed inset-0 bg-slate-950/75 z-50 flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-200 dark:border-slate-700">
             
             <div class="relative border-b dark:border-slate-700 pb-4 pt-1">
                 <button onclick="closeProductModal()" class="absolute top-0 left-0 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition z-10">✕</button>
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-12">
                     <div>
-                        <span id="modalProductCategory" class="text-xs px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-100 dark:border-blue-900"></span>
-                        <h2 id="modalProductName" class="text-lg md:text-2xl font-black text-slate-900 mt-1"></h2>
+                        <span id="modalProductCategory" class="text-xs px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold border border-blue-100 dark:border-blue-900"></span>
+                        <h2 id="modalProductName" class="text-lg md:text-2xl font-black text-slate-900 dark:text-white mt-1"></h2>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="openSpoilageModal()" class="text-xs bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1">
+                        <button onclick="openSpoilageModal()" class="text-xs bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1">
                             🍏❌ تسجيل تالف / كسر
                         </button>
-                        <button onclick="deleteProduct()" class="text-xs bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1">
+                        <button onclick="deleteProduct()" class="text-xs bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1">
                             🗑️ حذف المنتج
                         </button>
                     </div>
@@ -506,22 +508,22 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <!-- Section 1: Add Merchant Delivery -->
-                <div class="bg-slate-50/80 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-3">
-                    <h3 class="font-black text-xs text-slate-800 border-b dark:border-slate-700 pb-2 flex items-center justify-between">
+                <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+                    <h3 class="font-black text-xs text-slate-800 dark:text-slate-200 border-b dark:border-slate-700 pb-2 flex items-center justify-between">
                         <span>📦 توريد شحنة جديدة من تاجر</span>
                     </h3>
                     <form id="supplierForm" onsubmit="handleAddSupplierStock(event)" class="space-y-3">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">اسم التاجر / المورد</label>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم التاجر / المورد</label>
                             <input type="text" id="supMerchantName" list="merchantsDatalist" placeholder="اسم التاجر" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required autocomplete="off">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">سعر شراء الكيلو</label>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سعر شراء الكيلو</label>
                                 <input type="number" step="0.01" id="supBuyPrice" oninput="calculateSupTotalCost()" placeholder="1000" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1 flex justify-between">
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex justify-between">
                                     <span>نوع التعبئة</span>
                                     <button type="button" onclick="openPackagingModal()" class="text-indigo-600 dark:text-indigo-400 underline font-semibold">إضافة</button>
                                 </label>
@@ -530,11 +532,11 @@
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">عدد القطع الواردة</label>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">عدد القطع الواردة</label>
                                 <input type="number" id="supPieceCount" oninput="calculateSupTotalCost()" placeholder="20" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">طريقة التسديد للتاجر</label>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">طريقة التسديد للتاجر</label>
                                 <select id="supPaymentMethod" class="w-full p-2.5 ios-input rounded-xl text-xs font-bold bg-white dark:bg-slate-800" required>
                                     <option value="دين علينا (آجل)">دين علينا (آجل)</option>
                                     <option value="نقداً (مصروف)">نقداً (مصروف مدفوع)</option>
@@ -542,46 +544,46 @@
                             </div>
                         </div>
 
-                        <div class="bg-indigo-50/70 dark:bg-indigo-950/40 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 text-xs space-y-1">
+                        <div class="bg-indigo-50 dark:bg-indigo-950/60 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900 text-xs space-y-1">
                             <div class="flex justify-between text-indigo-900 dark:text-indigo-300">
                                 <span>إجمالي الوزن الحسابي:</span>
                                 <span id="supCalcTotalKg" class="font-bold">0 كغم</span>
                             </div>
-                            <div class="flex justify-between text-indigo-900 dark:text-indigo-300 font-extrabold text-sm border-t border-indigo-200/60 dark:border-indigo-800 pt-1">
+                            <div class="flex justify-between text-indigo-900 dark:text-indigo-300 font-extrabold text-sm border-t border-indigo-200 dark:border-indigo-800 pt-1">
                                 <span>إجمالي التكلفة الحسابية:</span>
                                 <span id="supCalcTotalCost">0</span>
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm active:scale-[0.98]">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98]">
                             تسجيل وارد التاجر والتكلفة
                         </button>
                     </form>
                 </div>
 
                 <!-- Section 2: Sell Product Calculator -->
-                <div class="bg-blue-50/40 dark:bg-blue-950/30 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/50 space-y-3">
-                    <h3 class="font-black text-xs text-blue-900 dark:text-blue-300 border-b border-blue-200/60 dark:border-blue-800 pb-2 flex items-center justify-between">
+                <div class="bg-blue-50/50 dark:bg-blue-950/40 p-4 rounded-2xl border border-blue-100 dark:border-blue-900 space-y-3">
+                    <h3 class="font-black text-xs text-blue-900 dark:text-blue-300 border-b border-blue-200 dark:border-blue-800 pb-2 flex items-center justify-between">
                         <span>⚖️ آلة حاسبة وتسجيل عملية بيع</span>
                     </h3>
                     <form id="sellCalcForm" onsubmit="handleRegisterSale(event)" class="space-y-3">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">اسم المشتري / الزبون</label>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المشتري / الزبون</label>
                             <input type="text" id="sellCustomerName" list="customersDatalist" placeholder="اسم الزبون" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required autocomplete="off">
                         </div>
 
-                        <div class="p-2.5 bg-blue-100/50 dark:bg-blue-900/30 rounded-xl border border-blue-200 dark:border-blue-800">
+                        <div class="p-2.5 bg-blue-100/60 dark:bg-blue-900/40 rounded-xl border border-blue-200 dark:border-blue-800">
                             <label class="block text-xs font-black text-blue-900 dark:text-blue-300 mb-1">اختيار شحنة التاجر</label>
                             <select id="sellShipmentSelect" onchange="handleShipmentSelectChange()" class="w-full p-2 ios-input rounded-lg text-xs font-bold bg-white dark:bg-slate-800" required></select>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">الكمية المباعة (كغم)</label>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">الكمية المباعة (كغم)</label>
                                 <input type="number" step="0.1" id="sellKg" oninput="calculateSalePrice()" placeholder="40" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1 flex justify-between">
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 flex justify-between">
                                     <span>نوع التعبئة</span>
                                     <button type="button" onclick="openPackagingModal()" class="text-indigo-600 dark:text-indigo-400 underline font-semibold">إضافة</button>
                                 </label>
@@ -591,11 +593,11 @@
 
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">سعر بيع الكيلو الأساسي</label>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سعر بيع الكيلو الأساسي</label>
                                 <input type="number" step="0.01" id="sellPricePerKg" oninput="calculateSalePrice()" placeholder="500" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">طريقة الدفع</label>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">طريقة الدفع</label>
                                 <select id="sellPaymentType" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white dark:bg-slate-800">
                                     <option value="نقد">نقداً (إيراد مكتمل)</option>
                                     <option value="دين">بالدين (دين لنا على زبون)</option>
@@ -603,26 +605,26 @@
                             </div>
                         </div>
 
-                        <div class="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 space-y-1.5 text-xs shadow-sm">
-                            <div class="flex justify-between text-slate-600">
+                        <div class="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5 text-xs">
+                            <div class="flex justify-between text-slate-600 dark:text-slate-400">
                                 <span>عدد القطع:</span>
-                                <span id="calcPieces" class="font-bold text-slate-900">0 قطعة</span>
+                                <span id="calcPieces" class="font-bold text-slate-900 dark:text-slate-100">0 قطعة</span>
                             </div>
-                            <div class="flex justify-between text-slate-600">
+                            <div class="flex justify-between text-slate-600 dark:text-slate-400">
                                 <span>سعر البضاعة:</span>
-                                <span id="calcBasePrice" class="font-bold text-slate-900">0</span>
+                                <span id="calcBasePrice" class="font-bold text-slate-900 dark:text-slate-100">0</span>
                             </div>
-                            <div class="flex justify-between text-slate-600">
+                            <div class="flex justify-between text-slate-600 dark:text-slate-400">
                                 <span>تكلفة التعبئة:</span>
                                 <span id="calcPkgCost" class="font-bold text-indigo-700 dark:text-indigo-400">0</span>
                             </div>
-                            <div class="flex justify-between text-slate-600">
+                            <div class="flex justify-between text-slate-600 dark:text-slate-400">
                                 <span>أجور النقل:</span>
-                                <span id="calcTotalTransport" class="font-bold text-slate-900">0</span>
+                                <span id="calcTotalTransport" class="font-bold text-slate-900 dark:text-slate-100">0</span>
                             </div>
-                            <div class="flex justify-between text-slate-600">
+                            <div class="flex justify-between text-slate-600 dark:text-slate-400">
                                 <span>عمولة البيع (7%):</span>
-                                <span id="calcCommission" class="font-bold text-slate-900">0</span>
+                                <span id="calcCommission" class="font-bold text-slate-900 dark:text-slate-100">0</span>
                             </div>
                             <div class="flex justify-between text-emerald-700 dark:text-emerald-400 font-extrabold border-t dark:border-slate-700 pt-2 text-xs md:text-sm">
                                 <span>الإجمالي المطلوب:</span>
@@ -630,7 +632,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm active:scale-[0.98]">
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98]">
                             حفظ عملية البيع والتحديث
                         </button>
                     </form>
@@ -638,8 +640,8 @@
             </div>
 
             <div class="border-t dark:border-slate-700 pt-4">
-                <h3 class="font-black text-xs text-slate-800 mb-2">سجل شحنات الموردين والمخزون المتبقي</h3>
-                <div class="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
+                <h3 class="font-black text-xs text-slate-800 dark:text-slate-200 mb-2">سجل شحنات الموردين والمخزون المتبقي</h3>
+                <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
                     <table class="w-full text-right text-xs">
                         <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold">
                             <tr>
@@ -663,25 +665,25 @@
     </div>
 
     <!-- PARTIAL PAYMENT MODAL -->
-    <div id="partialPaymentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+    <div id="partialPaymentModal" class="fixed inset-0 bg-slate-950/75 z-[80] flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-200 dark:border-slate-700">
             <button onclick="closePartialPaymentModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition">✕</button>
-            <h3 class="text-base font-black text-slate-900 border-b dark:border-slate-700 pb-2">💳 تسديد دين (كلي أو جزئي)</h3>
-            <p class="text-xs text-slate-500 font-semibold" id="payModalSubtext"></p>
+            <h3 class="text-base font-black text-slate-900 dark:text-white border-b dark:border-slate-700 pb-2">💳 تسديد دين (كلي أو جزئي)</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold" id="payModalSubtext"></p>
 
             <form onsubmit="handleExecutePartialPayment(event)" class="space-y-3">
                 <input type="hidden" id="payDocId">
                 <input type="hidden" id="payType">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">المبلغ المسدد حالياً</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">المبلغ المسدد حالياً</label>
                     <input type="number" step="0.01" id="payAmount" class="w-full p-3 ios-input rounded-xl text-xs font-bold" placeholder="أدخل المبلغ المسدد" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">تاريخ السداد</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">تاريخ السداد</label>
                     <input type="date" id="payDate" class="w-full p-3 ios-input rounded-xl text-xs font-semibold" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">ملاحظات / طريقة الدفع</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">ملاحظات / طريقة الدفع</label>
                     <input type="text" id="payNotes" placeholder="مثلاً: دفعة نقدية أولى" class="w-full p-3 ios-input rounded-xl text-xs font-semibold">
                 </div>
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition active:scale-[0.98]">
@@ -692,23 +694,23 @@
     </div>
 
     <!-- EDIT TRANSACTION MODAL -->
-    <div id="editTransactionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+    <div id="editTransactionModal" class="fixed inset-0 bg-slate-950/75 z-[80] flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-200 dark:border-slate-700">
             <button onclick="closeEditModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition">✕</button>
-            <h3 class="text-base font-black text-slate-900 border-b dark:border-slate-700 pb-2">✏️ تعديل المعاملة المالية</h3>
+            <h3 class="text-base font-black text-slate-900 dark:text-white border-b dark:border-slate-700 pb-2">✏️ تعديل المعاملة المالية</h3>
 
             <form onsubmit="handleSaveEditTransaction(event)" class="space-y-3">
                 <input type="hidden" id="editDocId">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">اسم الشخص / الجهة</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم الشخص / الجهة</label>
                     <input type="text" id="editPersonName" class="w-full p-3 ios-input rounded-xl text-xs font-semibold" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">المبلغ</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">المبلغ</label>
                     <input type="number" step="0.01" id="editAmount" class="w-full p-3 ios-input rounded-xl text-xs font-bold" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">التفاصيل / البيان</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التفاصيل / البيان</label>
                     <input type="text" id="editDetails" class="w-full p-3 ios-input rounded-xl text-xs font-semibold">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs transition active:scale-[0.98]">
@@ -719,22 +721,22 @@
     </div>
 
     <!-- SPOILAGE MODAL -->
-    <div id="spoilageModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+    <div id="spoilageModal" class="fixed inset-0 bg-slate-950/75 z-[80] flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-200 dark:border-slate-700">
             <button onclick="closeSpoilageModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition">✕</button>
-            <h3 class="text-base font-black text-slate-900 border-b dark:border-slate-700 pb-2">🍏❌ تسجيل كمية تالفة / كسر</h3>
+            <h3 class="text-base font-black text-slate-900 dark:text-white border-b dark:border-slate-700 pb-2">🍏❌ تسجيل كمية تالفة / كسر</h3>
 
             <form onsubmit="handleSaveSpoilage(event)" class="space-y-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">اختر الشحنة المصابة بالتلف</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اختر الشحنة المصابة بالتلف</label>
                     <select id="spoilageShipmentSelect" class="w-full p-2.5 ios-input rounded-xl text-xs font-bold bg-white dark:bg-slate-800" required></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">عدد القطع التالفة (أو الصناديق)</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">عدد القطع التالفة (أو الصناديق)</label>
                     <input type="number" id="spoilagePieces" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" placeholder="أدخل عدد الصناديق التالفة" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">سبب التلف / ملاحظات</label>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">سبب التلف / ملاحظات</label>
                     <input type="text" id="spoilageReason" placeholder="مثلاً: تلف بسبب الحرارة أو النقل" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required>
                 </div>
                 <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl text-xs transition active:scale-[0.98]">
@@ -745,21 +747,21 @@
     </div>
 
     <!-- INVOICE PRINT & WHATSAPP MODAL -->
-    <div id="invoiceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+    <div id="invoiceModal" class="fixed inset-0 bg-slate-950/75 z-[90] flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl relative border border-slate-200 dark:border-slate-700">
             <button onclick="closeInvoiceModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition">✕</button>
             
             <div id="printableInvoice" class="p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 text-xs">
                 <div class="text-center border-b dark:border-slate-700 pb-3">
-                    <h2 class="text-lg font-black text-slate-900">سوق الفواكه والخضار</h2>
-                    <p class="text-slate-500 font-bold mt-0.5">فاتورة بيع ومعاملة مالية</p>
+                    <h2 class="text-lg font-black text-slate-900 dark:text-white">سوق الفواكه والخضار</h2>
+                    <p class="text-slate-500 dark:text-slate-400 font-bold mt-0.5">فاتورة بيع ومعاملة مالية</p>
                     <p class="text-[10px] text-slate-400 mt-1" id="invDate"></p>
                 </div>
                 
                 <div class="space-y-1.5">
-                    <div class="flex justify-between"><span class="text-slate-500">اسم العميل:</span> <span id="invCustomer" class="font-bold text-slate-900"></span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">نوع المعاملة:</span> <span id="invType" class="font-bold text-blue-600 dark:text-blue-400"></span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">البيان والتفاصيل:</span> <span id="invDetails" class="font-semibold text-slate-800"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">اسم العميل:</span> <span id="invCustomer" class="font-bold text-slate-900 dark:text-white"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">نوع المعاملة:</span> <span id="invType" class="font-bold text-blue-600 dark:text-blue-400"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-500 dark:text-slate-400">البيان والتفاصيل:</span> <span id="invDetails" class="font-semibold text-slate-800 dark:text-slate-200"></span></div>
                 </div>
 
                 <div class="border-t dark:border-slate-700 pt-3 flex justify-between items-center font-black text-base text-emerald-700 dark:text-emerald-400">
@@ -769,7 +771,7 @@
             </div>
 
             <div class="flex gap-2">
-                <button onclick="window.print()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl text-xs transition">🖨️ طباعة الفاتورة</button>
+                <button onclick="window.print()" class="flex-1 bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-3 rounded-xl text-xs transition">🖨️ طباعة الفاتورة</button>
                 <button onclick="shareInvoiceWhatsApp()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition">💬 مشاركة عبر واتساب</button>
             </div>
         </div>
@@ -800,7 +802,9 @@
     function updateThemeToggleIcons(isDark) {
         const btns = document.querySelectorAll('.theme-toggle-btn');
         btns.forEach(btn => {
-            btn.innerHTML = isDark ? '☀️ الوضع الفاتح' : '🌙 الوضع الداكن';
+            btn.innerHTML = isDark 
+                ? '☀️ <span class="hidden sm:inline">الوضع الفاتح</span><span class="sm:hidden">فاتح</span>' 
+                : '🌙 <span class="hidden sm:inline">الوضع الداكن</span><span class="sm:hidden">داكن</span>';
         });
     }
 
@@ -1150,7 +1154,7 @@
                 }
             } else if (r.status === 'معلق') {
                 if (r.type === 'دين لنا (على زبون)') pendingUsSum += r.amount;
-                else if (r.type === 'دين علينا (لتاجر)') pendingThemSum += r.amount;
+                else if (r.type === 'دين علينا (لتجار)') pendingThemSum += r.amount;
             }
 
             if (r.status === 'مكتمل') {
@@ -1160,16 +1164,16 @@
                 const isOutflow = r.type.includes('مصروف') || r.type.includes('خسارة') || r.type.includes('سداد دين');
 
                 tr.innerHTML = `
-                    <td class="py-3 px-2 text-slate-500 font-semibold date-cell">${r.date}</td>
-                    <td class="py-3 px-2 font-bold text-slate-900">${r.personName}</td>
+                    <td class="py-3 px-2 text-slate-500 dark:text-slate-400 font-semibold date-cell">${r.date}</td>
+                    <td class="py-3 px-2 font-bold text-slate-900 dark:text-white">${r.personName}</td>
                     <td class="py-3 px-2"><span class="badge-type ${getBadgeClass(r.type)}">${r.type}</span></td>
                     <td class="py-3 px-2 font-black ${isOutflow ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}">
                         ${isOutflow ? '-' : '+'}${formatNumber(r.amount)}
                     </td>
-                    <td class="py-3 px-2 text-slate-500 font-semibold">${r.details || '---'}</td>
+                    <td class="py-3 px-2 text-slate-500 dark:text-slate-400 font-semibold">${r.details || '---'}</td>
                     <td class="py-3 px-2 text-center flex items-center justify-center gap-2">
-                        <button onclick="openInvoiceModal('${r.docId}')" title="فاتورة" class="text-slate-600 hover:text-blue-600 font-bold">🧾</button>
-                        <button onclick="openEditModal('${r.docId}')" title="تعديل" class="text-slate-600 hover:text-amber-600 font-bold">✏️</button>
+                        <button onclick="openInvoiceModal('${r.docId}')" title="فاتورة" class="text-slate-600 dark:text-slate-400 hover:text-blue-600 font-bold">🧾</button>
+                        <button onclick="openEditModal('${r.docId}')" title="تعديل" class="text-slate-600 dark:text-slate-400 hover:text-amber-600 font-bold">✏️</button>
                         <button onclick="deleteRecord('${r.docId}')" title="حذف" class="text-red-500 hover:text-red-700 font-bold">🗑️</button>
                     </td>
                 `;
@@ -1207,8 +1211,8 @@
                 customerSum += r.amount;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="py-2.5 px-2 text-slate-500 font-semibold date-cell">${r.date}</td>
-                    <td class="py-2.5 px-2 font-bold text-slate-900">${r.personName}</td>
+                    <td class="py-2.5 px-2 text-slate-500 dark:text-slate-400 font-semibold date-cell">${r.date}</td>
+                    <td class="py-2.5 px-2 font-bold text-slate-900 dark:text-white">${r.personName}</td>
                     <td class="py-2.5 px-2 font-black text-cyan-600 dark:text-cyan-400">${formatNumber(r.amount)}</td>
                     <td class="py-2.5 px-2 text-center">
                         <button onclick="openPartialPaymentModal('${r.docId}', ${r.amount}, '${r.personName}', '${r.type}')" class="text-xs px-3 py-1 rounded-lg bg-cyan-100 dark:bg-cyan-950 hover:bg-cyan-200 dark:hover:bg-cyan-900 text-cyan-900 dark:text-cyan-200 font-bold transition">
@@ -1221,8 +1225,8 @@
                 merchantSum += r.amount;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="py-2.5 px-2 text-slate-500 font-semibold date-cell">${r.date}</td>
-                    <td class="py-2.5 px-2 font-bold text-slate-900">${r.personName}</td>
+                    <td class="py-2.5 px-2 text-slate-500 dark:text-slate-400 font-semibold date-cell">${r.date}</td>
+                    <td class="py-2.5 px-2 font-bold text-slate-900 dark:text-white">${r.personName}</td>
                     <td class="py-2.5 px-2 font-black text-amber-600 dark:text-amber-400">${formatNumber(r.amount)}</td>
                     <td class="py-2.5 px-2 text-center">
                         <button onclick="openPartialPaymentModal('${r.docId}', ${r.amount}, '${r.personName}', '${r.type}')" class="text-xs px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-950 hover:bg-amber-200 dark:hover:bg-amber-900 text-amber-900 dark:text-amber-200 font-bold transition">
@@ -1263,7 +1267,7 @@
         packagingTypes.forEach(p => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="p-3 font-bold text-slate-800">${p.name}</td>
+                <td class="p-3 font-bold text-slate-800 dark:text-slate-200">${p.name}</td>
                 <td class="p-3 font-semibold text-emerald-600 dark:text-emerald-400">${formatNumber(p.price)}</td>
                 <td class="p-3 font-black text-blue-600 dark:text-blue-400">${p.capacityKg} كغم</td>
                 <td class="p-3 text-center">
@@ -1315,12 +1319,12 @@
                 </div>
                 
                 <div class="my-3 text-center">
-                    <h3 class="text-sm sm:text-base font-black text-slate-900">${p.name}</h3>
+                    <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white">${p.name}</h3>
                     <p class="text-[10px] text-slate-400 font-semibold mt-0.5">الشحنات: ${suppliers.length}</p>
                 </div>
                 
                 <div class="w-full pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-[10px] sm:text-xs">
-                    <span class="text-slate-500 font-bold">المتبقي:</span>
+                    <span class="text-slate-500 dark:text-slate-400 font-bold">المتبقي:</span>
                     <span class="font-black px-2 py-0.5 rounded-md ${totalRemainingPieces > 0 ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400'}">
                         ${totalRemainingPieces > 0 ? formatNumber(totalRemainingPieces, false) + ' قطعة' : 'نفذ'}
                     </span>
@@ -1403,13 +1407,13 @@
             const remPieces = s.remainingPieces ?? s.pieceCount;
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="p-2.5 text-slate-500 font-semibold date-cell">${s.date || '---'}</td>
-                <td class="p-2.5 font-bold text-slate-800">${s.merchantName}</td>
+                <td class="p-2.5 text-slate-500 dark:text-slate-400 font-semibold date-cell">${s.date || '---'}</td>
+                <td class="p-2.5 font-bold text-slate-800 dark:text-slate-200">${s.merchantName}</td>
                 <td class="p-2.5"><span class="badge-type bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200">${s.paymentMethod || 'عام'}</span></td>
                 <td class="p-2.5 font-bold text-emerald-600 dark:text-emerald-400">${formatNumber(s.buyPrice)}</td>
-                <td class="p-2.5 font-semibold">${s.pkgType}</td>
+                <td class="p-2.5 font-semibold text-slate-800 dark:text-slate-200">${s.pkgType}</td>
                 <td class="p-2.5 font-black text-indigo-700 dark:text-indigo-400">${formatNumber(s.totalCost || 0)}</td>
-                <td class="p-2.5 font-bold">${s.pieceCount} قطعة</td>
+                <td class="p-2.5 font-bold text-slate-800 dark:text-slate-200">${s.pieceCount} قطعة</td>
                 <td class="p-2.5 font-black ${remPieces > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}">${remPieces} قطعة</td>
                 <td class="p-2.5 text-center">
                     <button onclick="deleteSupplierStock('${s.id}')" class="text-xs text-red-500 font-bold">حذف</button>
@@ -1639,15 +1643,15 @@
             card.innerHTML = `
                 <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
                     <div>
-                        <h3 class="text-base font-black text-slate-900">${merchant}</h3>
-                        <p class="text-xs text-slate-500 font-semibold mt-0.5">الدين المتبقي: <b class="text-amber-600 dark:text-amber-400">${formatNumber(pendingDebt)}</b> | المدفوع: <b class="text-emerald-600 dark:text-emerald-400">${formatNumber(totalPaid)}</b></p>
+                        <h3 class="text-base font-black text-slate-900 dark:text-white">${merchant}</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">الدين المتبقي: <b class="text-amber-600 dark:text-amber-400">${formatNumber(pendingDebt)}</b> | المدفوع: <b class="text-emerald-600 dark:text-emerald-400">${formatNumber(totalPaid)}</b></p>
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="exportMerchantToExcel('${merchant}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">Excel 📊</button>
-                        <button onclick="deleteMerchant('${merchant}')" class="bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">🗑️ حذف التاجر</button>
+                        <button onclick="deleteMerchant('${merchant}')" class="bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">🗑️ حذف التاجر</button>
                     </div>
                 </div>
-                <div class="text-xs font-semibold text-slate-600">عدد الشحنات الموردة: ${mShipments.length} | إجمالي حركات البيع: ${mSales.length}</div>
+                <div class="text-xs font-semibold text-slate-600 dark:text-slate-400">عدد الشحنات الموردة: ${mShipments.length} | إجمالي حركات البيع: ${mSales.length}</div>
             `;
             container.appendChild(card);
         });
@@ -1658,7 +1662,6 @@
         if (confirm(`هل أنت تأكد من حذف التاجر (${merchantName}) وكافة شحناته ومعاملاته المرتبطة؟`)) {
             const batch = db.batch();
 
-            // 1. حذف جميع المعاملات الخاصة بالتاجر
             records.forEach(r => {
                 if (r.personName === merchantName || r.merchantName === merchantName) {
                     const ref = db.collection('users').doc(currentUser.uid).collection('records').doc(r.docId);
@@ -1666,7 +1669,6 @@
                 }
             });
 
-            // 2. تحديث المنتجات وإزالة شحنات هذا التاجر
             products.forEach(p => {
                 if (p.suppliers && p.suppliers.some(s => s.merchantName === merchantName)) {
                     const updatedSuppliers = p.suppliers.filter(s => s.merchantName !== merchantName);
