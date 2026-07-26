@@ -213,74 +213,29 @@
             </div>
         </section>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Form Section -->
-            <div class="lg:col-span-1 ios-card p-5 md:p-6 h-fit">
-                <h2 class="text-sm md:text-base font-black mb-4 text-slate-900 border-b pb-3 flex items-center gap-2">
-                    <span>📝</span> تسجيل معاملة مالية جديدة
-                </h2>
-                <form id="transactionForm" class="space-y-3.5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">التاريخ</label>
-                        <input type="date" id="date" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">الجهة / اسم الشخص</label>
-                        <input type="text" id="personName" list="customersDatalist" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" placeholder="اسم الزبون أو التاجر" required autocomplete="off">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">نوع المعاملة</label>
-                        <select id="type" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold bg-white" required>
-                            <option value="إيراد (+)">إيراد (+)</option>
-                            <option value="مصروف (-)">مصروف (-)</option>
-                            <option value="دين لنا (على زبون)">دين لنا (على زبون)</option>
-                            <option value="دين علينا (لتاجر)">دين علينا (لتاجر)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">المبلغ الإجمالي</label>
-                        <input type="number" step="0.01" id="amount" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" placeholder="0" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">التفاصيل / البيان</label>
-                        <input type="text" id="details" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" placeholder="ملاحظات إضافية">
-                    </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-blue-200 text-xs active:scale-[0.98]">حفظ المعاملة</button>
-                </form>
+        <!-- Transactions Table Section (Full Width) -->
+        <div class="ios-card p-5 md:p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 border-b pb-3 gap-3">
+                <h2 class="text-sm md:text-base font-black text-slate-900">سجل المعاملات المكتملة</h2>
+                <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition shadow-sm active:scale-[0.98]">
+                    تصدير Excel 📊
+                </button>
             </div>
 
-            <!-- Transactions Table Section -->
-            <div class="lg:col-span-2 space-y-4">
-                <div class="ios-card p-5 md:p-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b pb-3 gap-3">
-                        <h2 class="text-sm md:text-base font-black text-slate-900">سجل المعاملات المكتملة</h2>
-                        <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition shadow-sm active:scale-[0.98]">
-                            تصدير Excel 📊
-                        </button>
-                    </div>
-
-                    <!-- Date Filter Bar -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80">
-                        <input type="date" id="dashDateFrom" onchange="updateUI()" class="p-2 ios-input rounded-xl text-xs font-semibold" placeholder="من تاريخ">
-                        <input type="date" id="dashDateTo" onchange="updateUI()" class="p-2 ios-input rounded-xl text-xs font-semibold" placeholder="إلى تاريخ">
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-right text-xs">
-                            <thead class="text-slate-400 border-b border-slate-100 font-bold">
-                                <tr>
-                                    <th class="pb-3 px-2">التاريخ</th>
-                                    <th class="pb-3 px-2">الاسم</th>
-                                    <th class="pb-3 px-2">النوع</th>
-                                    <th class="pb-3 px-2">المبلغ</th>
-                                    <th class="pb-3 px-2">البيان</th>
-                                    <th class="pb-3 px-2 text-center">إجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transactionsBody" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-xs">
+                    <thead class="text-slate-400 border-b border-slate-100 font-bold">
+                        <tr>
+                            <th class="pb-3 px-2">التاريخ</th>
+                            <th class="pb-3 px-2">الاسم</th>
+                            <th class="pb-3 px-2">النوع</th>
+                            <th class="pb-3 px-2">المبلغ</th>
+                            <th class="pb-3 px-2">البيان</th>
+                            <th class="pb-3 px-2 text-center">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsBody" class="divide-y divide-slate-100"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -797,7 +752,6 @@
     let unsubscribeProducts = null;
     let unsubscribePackaging = null;
 
-    document.getElementById('date').valueAsDate = new Date();
     document.getElementById('currencySelect').value = currencySymbol;
 
     function changeCurrency(val) {
@@ -950,36 +904,6 @@
         document.getElementById('merchantsDatalist').innerHTML = Array.from(merchantsSet).map(n => `<option value="${n}">`).join('');
     }
 
-    document.getElementById('transactionForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (!currentUser) return;
-
-        const type = document.getElementById('type').value;
-        const isDebt = type.includes('دين');
-        const submitBtn = document.getElementById('submitBtn');
-
-        submitBtn.disabled = true;
-
-        const newRecord = {
-            createdAt: Date.now(),
-            date: document.getElementById('date').value,
-            personName: document.getElementById('personName').value.trim(),
-            type: type,
-            amount: parseFloat(document.getElementById('amount').value) || 0,
-            details: document.getElementById('details').value || '---',
-            status: isDebt ? 'معلق' : 'مكتمل'
-        };
-
-        db.collection('users').doc(currentUser.uid).collection('records').add(newRecord)
-            .then(() => {
-                this.reset();
-                document.getElementById('date').valueAsDate = new Date();
-                showToast("تم حفظ المعاملة بنجاح");
-            })
-            .catch(err => showToast(err.message, 'error'))
-            .finally(() => submitBtn.disabled = false);
-    });
-
     function deleteRecord(docId) {
         if (!currentUser) return;
         if (confirm("هل تريد إزالة هذه المعاملة؟")) {
@@ -988,7 +912,7 @@
         }
     }
 
-    // Partial Payment Logic (مُعدلة ومُصححة)
+    // Partial Payment Logic
     function openPartialPaymentModal(docId, currentAmount, personName, type) {
         document.getElementById('payDocId').value = docId;
         document.getElementById('payType').value = type;
@@ -1017,7 +941,6 @@
         const remaining = record.amount - payAmount;
         const batch = db.batch();
 
-        // تحديث المسمى: سداد دين لتاجر أو تحصيل دين من زبون
         const isCustomerDebt = record.type.includes('على زبون');
         const paymentType = isCustomerDebt ? 'تحصيل دين من زبون' : 'سداد دين لتاجر';
 
@@ -1026,7 +949,7 @@
             createdAt: Date.now(),
             date: payDate,
             personName: record.personName,
-            type: paymentType, // مسمى صريح وواضح
+            type: paymentType,
             amount: payAmount,
             details: `سداد من دين سابق: (${payNotes})`,
             status: 'مكتمل'
@@ -1034,7 +957,6 @@
 
         const debtRef = db.collection('users').doc(currentUser.uid).collection('records').doc(docId);
 
-        // عند اكتمال سداد الدين بالكامل، تُغير حالته إلى "مسدد بالكامل" بدلاً من "مكتمل" لكي لا يظهر كمعاملة 0 د.ع في سجل المعاملات المكتملة
         if (remaining <= 0) {
             batch.update(debtRef, { status: 'مسدد بالكامل', amount: 0 });
         } else {
@@ -1108,7 +1030,7 @@
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     }
 
-    // تحديث الواجهة وتصفية الحركات
+    // تحديث الواجهة والتجميع المالي
     function updateUI() {
         const transactionsBody = document.getElementById('transactionsBody');
         if (!transactionsBody) return;
@@ -1117,11 +1039,7 @@
 
         let incomeSum = 0, expenseSum = 0, pendingUsSum = 0, pendingThemSum = 0;
 
-        const dateFrom = document.getElementById('dashDateFrom')?.value || '';
-        const dateTo = document.getElementById('dashDateTo')?.value || '';
-
         records.forEach(r => {
-            // الحسابات المالية للمكتمل
             if (r.status === 'مكتمل') {
                 if (r.type === 'إيراد (+)' || r.type === 'تحصيل دين من زبون') {
                     incomeSum += r.amount;
@@ -1133,11 +1051,7 @@
                 else if (r.type === 'دين علينا (لتاجر)') pendingThemSum += r.amount;
             }
 
-            // التصفية بالتاريخ لجدول المعاملات المكتملة
-            const matchesFrom = !dateFrom || r.date >= dateFrom;
-            const matchesTo = !dateTo || r.date <= dateTo;
-
-            if (r.status === 'مكتمل' && matchesFrom && matchesTo) {
+            if (r.status === 'مكتمل') {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition";
                 
@@ -1626,12 +1540,43 @@
                         <h3 class="text-base font-black text-slate-900">${merchant}</h3>
                         <p class="text-xs text-slate-500 font-semibold mt-0.5">الدين المتبقي: <b class="text-amber-600">${formatNumber(pendingDebt)}</b> | المدفوع: <b class="text-emerald-600">${formatNumber(totalPaid)}</b></p>
                     </div>
-                    <button onclick="exportMerchantToExcel('${merchant}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs">Excel 📊</button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="exportMerchantToExcel('${merchant}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">Excel 📊</button>
+                        <button onclick="deleteMerchant('${merchant}')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">🗑️ حذف التاجر</button>
+                    </div>
                 </div>
                 <div class="text-xs font-semibold text-slate-600">عدد الشحنات الموردة: ${mShipments.length} | إجمالي حركات البيع: ${mSales.length}</div>
             `;
             container.appendChild(card);
         });
+    }
+
+    function deleteMerchant(merchantName) {
+        if (!currentUser) return;
+        if (confirm(`هل أنت تأكد من حذف التاجر (${merchantName}) وكافة شحناته ومعاملاته المرتبطة؟`)) {
+            const batch = db.batch();
+
+            // 1. حذف جميع المعاملات الخاصة بالتاجر
+            records.forEach(r => {
+                if (r.personName === merchantName || r.merchantName === merchantName) {
+                    const ref = db.collection('users').doc(currentUser.uid).collection('records').doc(r.docId);
+                    batch.delete(ref);
+                }
+            });
+
+            // 2. تحديث المنتجات وإزالة شحنات هذا التاجر
+            products.forEach(p => {
+                if (p.suppliers && p.suppliers.some(s => s.merchantName === merchantName)) {
+                    const updatedSuppliers = p.suppliers.filter(s => s.merchantName !== merchantName);
+                    const ref = db.collection('users').doc(currentUser.uid).collection('products').doc(p.docId);
+                    batch.update(ref, { suppliers: updatedSuppliers });
+                }
+            });
+
+            batch.commit().then(() => {
+                showToast(`تم حذف التاجر (${merchantName}) وجميع بياناته بنجاح`);
+            }).catch(err => showToast(err.message, 'error'));
+        }
     }
 
     function deleteProduct() {
@@ -1643,10 +1588,7 @@
         }
     }
 
-    // ==========================================================
-    // EXCEL ADVANCED ARABIC & MULTI-SHEET EXPORT SYSTEM
-    // ==========================================================
-
+    // EXCEL EXPORT SYSTEM
     function createFormattedSheet(jsonData, customCols = []) {
         const ws = XLSX.utils.json_to_sheet(jsonData);
         ws['!views'] = [{ RTL: true }];
@@ -1660,25 +1602,10 @@
     }
 
     function exportToExcel() {
-        if (!records || records.length === 0) {
-            showToast("لا توجد بيانات للتصدير", "warning");
-            return;
-        }
-
-        const dateFrom = document.getElementById('dashDateFrom')?.value || '';
-        const dateTo = document.getElementById('dashDateTo')?.value || '';
-
-        const filtered = records.filter(r => {
-            if (r.status !== 'مكتمل') return false;
-            const matchesFrom = !dateFrom || r.date >= dateFrom;
-            const matchesTo = !dateTo || r.date <= dateTo;
-            return matchesFrom && matchesTo;
-        });
-
-        const listToExport = filtered.length > 0 ? filtered : records.filter(r => r.status === 'مكتمل');
+        const listToExport = records.filter(r => r.status === 'مكتمل');
 
         if (listToExport.length === 0) {
-            showToast("لا توجد معاملات مكتملة في الفترة المحددة للتصدير", "warning");
+            showToast("لا توجد معاملات مكتملة للتصدير", "warning");
             return;
         }
 
