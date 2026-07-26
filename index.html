@@ -25,8 +25,8 @@
             font-family: 'Tajawal', sans-serif; 
             background: #f8fafc; 
             color: #0f172a;
-            transition: background-color 0.2s ease, color 0.2s ease;
-            touch-action: pan-y; /* يسمح بالتمرير العمودي لعدم التعارض مع السحب الأفقية */
+            transition: background-color 0.25s ease, color 0.25s ease;
+            touch-action: pan-y;
             overflow-x: hidden;
         }
         .ios-card { 
@@ -34,7 +34,7 @@
             border-radius: 20px; 
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); 
             border: 1px solid #e2e8f0; 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .ios-card:hover {
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
@@ -61,12 +61,15 @@
             overflow: hidden;
             position: relative;
             touch-action: pan-y;
+            padding-top: 2px;
+            padding-bottom: 2px;
         }
         #viewsSlider {
             display: flex;
             width: 100%;
             align-items: flex-start;
             will-change: transform;
+            gap: 20px; /* مسافة فاصلة أنيقة بين القوائم لمنع التصاقها */
         }
 
         /* 🌙 DARK MODE OVERRIDES */
@@ -924,6 +927,7 @@
             document.getElementById('appSection').classList.remove('hidden');
             listenToDatabase();
             switchTab('dashboard', false);
+            initTouchSlider();
         } else {
             currentUser = null;
             records = [];
@@ -991,11 +995,12 @@
         const slider = document.getElementById('viewsSlider');
         if (!viewport || !slider) return;
 
+        const gap = 20; // مسافة فاصلة بين القوائم
         const width = viewport.clientWidth;
-        const targetOffset = tabIdx * width;
+        const targetOffset = tabIdx * (width + gap);
 
         if (animate) {
-            slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+            slider.style.transition = 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)';
         } else {
             slider.style.transition = 'none';
         }
@@ -1003,10 +1008,14 @@
     }
 
     // REAL-TIME DIRECT TOUCH DRAG SLIDER ENGINE
+    let touchSliderInitialized = false;
+
     function initTouchSlider() {
         const viewport = document.getElementById('viewsViewport');
         const slider = document.getElementById('viewsSlider');
-        if (!viewport || !slider) return;
+        if (!viewport || !slider || touchSliderInitialized) return;
+
+        touchSliderInitialized = true; // لمنع ربط الأحداث أكثر من مرة وحل مشكلة القفز بين القوائم
 
         let isDragging = false;
         let startX = 0;
@@ -1015,9 +1024,10 @@
         let isHorizontalSwipe = false;
         let isGestureDetermined = false;
 
+        const gap = 20;
+
         const onStart = (clientX, clientY, target) => {
-            // تجاهل التفاعل إذا بدأ الضغط داخل نافذة منبثقة أو حقول إدخال أو جدول قابل للتمرير
-            if (target.closest('.fixed') || target.closest('input') || target.closest('select') || target.closest('textarea') || target.closest('.overflow-x-auto') || target.closest('button')) {
+            if (target.closest('.fixed') || target.closest('input') || target.closest('select') || target.closest('textarea') || target.closest('.overflow-x-auto') || target.closest('button') || target.closest('a')) {
                 return false;
             }
             isDragging = true;
@@ -1026,7 +1036,7 @@
             startX = clientX;
             startY = clientY;
             currentDeltaX = 0;
-            slider.style.transition = 'none'; // إلغاء الحركة لتتبع الاصبع فوراً وبدون تأخير
+            slider.style.transition = 'none'; // إلغاء الأنميشن أثناء سحب الإصبع لمتابعة اللمس بمرونة
             return true;
         };
 
@@ -1037,33 +1047,33 @@
             const deltaY = clientY - startY;
 
             if (!isGestureDetermined) {
-                if (Math.abs(deltaX) > 6 || Math.abs(deltaY) > 6) {
+                if (Math.abs(deltaX) > 7 || Math.abs(deltaY) > 7) {
                     isGestureDetermined = true;
-                    if (Math.abs(deltaX) > Math.abs(deltaY) * 1.1) {
+                    if (Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
                         isHorizontalSwipe = true;
                     } else {
                         isHorizontalSwipe = false;
-                        isDragging = false; // تمرير عمودي عادي للصفحة
+                        isDragging = false;
                         return;
                     }
                 }
             }
 
             if (isHorizontalSwipe) {
-                if (e && e.cancelable) e.preventDefault(); // منع التذبذب العمودي أثناء السحب الأفقي
+                if (e && e.cancelable) e.preventDefault();
 
                 let effectiveDelta = deltaX;
-                // تأثير المطاط عند أطراف القوائم (الأولى والأخيرة)
-                if (currentTabIdx === 0 && deltaX < 0) {
-                    effectiveDelta = deltaX * 0.2;
-                } else if (currentTabIdx === mainTabs.length - 1 && deltaX > 0) {
-                    effectiveDelta = deltaX * 0.2;
+                // إعطاء تأثير مقاومة مرنة (مطاطي) عند الوصول لطرف القائمة الأولى أو الأخيرة
+                if (currentTabIdx === 0 && deltaX > 0) {
+                    effectiveDelta = deltaX * 0.25;
+                } else if (currentTabIdx === mainTabs.length - 1 && deltaX < 0) {
+                    effectiveDelta = deltaX * 0.25;
                 }
 
                 currentDeltaX = effectiveDelta;
                 const width = viewport.clientWidth;
-                const baseOffset = currentTabIdx * width;
-                slider.style.transform = `translateX(${baseOffset + currentDeltaX}px)`;
+                const baseOffset = currentTabIdx * (width + gap);
+                slider.style.transform = `translateX(${baseOffset - currentDeltaX}px)`;
             }
         };
 
@@ -1073,20 +1083,19 @@
 
             if (isHorizontalSwipe) {
                 const width = viewport.clientWidth;
-                const threshold = Math.min(width * 0.18, 75); // نسبة 18% من الشاشة لإكمال الانتقال
+                const threshold = Math.min(width * 0.15, 65); // المسافة المطلوبة لإنهاء الانتقال
                 let newIdx = currentTabIdx;
 
-                if (currentDeltaX > threshold && currentTabIdx < mainTabs.length - 1) {
-                    newIdx = currentTabIdx + 1; // سحب لليمين -> انتقل للقائمة التالية
-                } else if (currentDeltaX < -threshold && currentTabIdx > 0) {
-                    newIdx = currentTabIdx - 1; // سحب لليسار -> انتقل للقائمة السابقة
+                if (currentDeltaX < -threshold && currentTabIdx < mainTabs.length - 1) {
+                    newIdx = currentTabIdx + 1; // سحب لليسار -> الانتقال للقائمة التالية
+                } else if (currentDeltaX > threshold && currentTabIdx > 0) {
+                    newIdx = currentTabIdx - 1; // سحب لليمين -> العودة للقائمة السابقة
                 }
 
                 switchTab(mainTabs[newIdx], true);
             }
         };
 
-        // أحداث اللمس بالجوال
         viewport.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
                 onStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
@@ -1102,7 +1111,6 @@
         viewport.addEventListener('touchend', onEnd, { passive: true });
         viewport.addEventListener('touchcancel', onEnd, { passive: true });
 
-        // أحداث الفأرة للكمبيوتر/التجربة
         let isMouseDown = false;
         viewport.addEventListener('mousedown', (e) => {
             if (e.button === 0 && onStart(e.clientX, e.clientY, e.target)) {
@@ -1126,9 +1134,7 @@
         });
     }
 
-    // Initialize Touch Engine
     document.addEventListener('DOMContentLoaded', initTouchSlider);
-    setTimeout(initTouchSlider, 500);
 
     function listenToDatabase() {
         if (!currentUser) return;
@@ -1716,7 +1722,7 @@
         batch.update(prodRef, { suppliers: updatedSuppliers });
         batch.set(recordRef, {
             createdAt: Date.now(), date: dateStr, personName: merchantName,
-            type: isDebt ? 'دين علينا (لتاجر)' : 'مصروف (-)',
+            type: isDebt ? 'دين علينا (لتجار)' : 'مصروف (-)',
             amount: totalCost, details: `شراء شحنة ${currentSelectedProduct.name} (${pieceCount} قطعة)`,
             status: isDebt ? 'معلق' : 'مكتمل', merchantName, shipmentId
         });
@@ -1823,7 +1829,7 @@
             const mSales = records.filter(r => r.merchantName === merchant && (r.type.includes('إيراد') || r.type.includes('دين لنا')));
             const mRecords = records.filter(r => r.personName === merchant || r.merchantName === merchant);
 
-            const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتاجر)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
+            const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتجار)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
             const totalPaid = mRecords.filter(r => (r.type === 'مصروف (-)' || r.type === 'سداد دين لتاجر') && r.status === 'مكتمل').reduce((s, r) => s + r.amount, 0);
 
             const card = document.createElement('div');
@@ -2006,71 +2012,47 @@
         }));
 
         const mRecords = records.filter(r => r.personName === merchantName || r.merchantName === merchantName);
-        const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتاجر)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
+        const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتجار)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
         const totalPaid = mRecords.filter(r => (r.type === 'مصروف (-)' || r.type === 'سداد دين لتاجر') && r.status === 'مكتمل').reduce((s, r) => s + r.amount, 0);
-        const totalShipmentsCost = mShipments.reduce((s, sh) => s + (sh["التكلفة الإجمالية"] || 0), 0);
 
         const summaryData = [
-            { "البيان": "اسم التاجر", "القيمة / المبلغ": merchantName },
-            { "البيان": "إجمالي عدد الشحنات الموردة", "القيمة / المبلغ": mShipments.length },
-            { "البيان": "إجمالي تكلفة البضائع المستلمة", "القيمة / المبلغ": totalShipmentsCost },
-            { "البيان": "إجمالي المبالغ المسددة والمدفوعة للتاجر", "القيمة / المبلغ": totalPaid },
-            { "البيان": "المبلغ المتبقي علينا للتاجر (الدين الحالي)", "القيمة / المبلغ": pendingDebt }
+            { "اسم التاجر": merchantName, "الدين المتبقي للتاجر": pendingDebt, "إجمالي المسدد للتاجر": totalPaid, "العملة": currencySymbol }
         ];
 
-        const wsSummary = createFormattedSheet(summaryData, [{ wch: 40 }, { wch: 25 }]);
-        XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص والديون");
-
+        const wsSummary = createFormattedSheet(summaryData);
         const wsShipments = createFormattedSheet(mShipments.length > 0 ? mShipments : [{"ملاحظة": "لا توجد شحنات مسجلة لهذا التاجر"}]);
-        XLSX.utils.book_append_sheet(wb, wsShipments, "البضائع المستلمة");
+        const wsSales = createFormattedSheet(mSalesFormatted.length > 0 ? mSalesFormatted : [{"ملاحظة": "لا توجد حركات بيع من بضاعة هذا التاجر"}]);
 
-        const wsSales = createFormattedSheet(mSalesFormatted.length > 0 ? mSalesFormatted : [{"ملاحظة": "لا توجد مبيعات مسجلة لبضاعة هذا التاجر"}]);
-        XLSX.utils.book_append_sheet(wb, wsSales, "الزبائن والمبيعات");
+        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص التاجر");
+        XLSX.utils.book_append_sheet(wb, wsShipments, "سجل شحنات التاجر");
+        XLSX.utils.book_append_sheet(wb, wsSales, "مبيعات بضاعة التاجر");
 
         XLSX.writeFile(wb, `تقرير_التاجر_${merchantName}_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast(`تم تصدير تقرير التاجر (${merchantName}) بنجاح`);
+        showToast(`تم تصدير تقرير التاجر (${merchantName}) بنجاح 📊`);
     }
 
     function exportDebtsToExcel() {
-        const debts = records.filter(r => r.status === 'معلق');
-        if (debts.length === 0) {
-            showToast("لا توجد ديون معلقة للتصدير", "warning");
-            return;
-        }
-
         const wb = XLSX.utils.book_new();
 
-        const customerDebts = debts.filter(r => r.type.includes('دين لنا')).map(r => ({
+        const pendingDebts = records.filter(r => r.status === 'معلق');
+
+        const customerDebts = pendingDebts.filter(r => r.type.includes('دين لنا')).map(r => ({
             "التاريخ": r.date || '---',
             "اسم الزبون": r.personName || '---',
-            "المبلغ المتبقي (لنا)": r.amount || 0,
-            "التاجر المورد للبضاعة": r.merchantName || '---',
-            "اسم المنتج": r.productName || '---',
-            "البيان / التفاصيل": r.details || '---'
+            "المبلغ المتبقي (دين لنا)": r.amount || 0,
+            "البيان والتفاصيل": r.details || '---'
         }));
 
-        const merchantDebts = debts.filter(r => r.type.includes('دين علينا')).map(r => ({
+        const merchantDebts = pendingDebts.filter(r => r.type.includes('دين علينا')).map(r => ({
             "التاريخ": r.date || '---',
             "اسم التاجر": r.personName || '---',
-            "المبلغ المتبقي (علينا)": r.amount || 0,
-            "اسم المنتج / الشحنة": r.details || '---',
-            "حالة الدين": "معلق"
+            "المبلغ المتبقي (دين علينا)": r.amount || 0,
+            "البيان والتفاصيل": r.details || '---'
         }));
 
-        const totalCustDebt = customerDebts.reduce((sum, d) => sum + (d["المبلغ المتبقي (لنا)"] || 0), 0);
-        const totalMerchDebt = merchantDebts.reduce((sum, d) => sum + (d["المبلغ المتبقي (علينا)"] || 0), 0);
-
-        const summaryData = [
-            { "النوع": "إجمالي ديون الزبائن (مبالغ لنا)", "المبلغ": totalCustDebt, "العملة": currencySymbol },
-            { "النوع": "إجمالي ديون التجار (مبالغ علينا)", "المبلغ": totalMerchDebt, "العملة": currencySymbol },
-            { "النوع": "الصافي للديون (لنا - علينا)", "المبلغ": totalCustDebt - totalMerchDebt, "العملة": currencySymbol }
-        ];
-
-        const wsSummary = createFormattedSheet(summaryData, [{ wch: 35 }, { wch: 20 }, { wch: 15 }]);
         const wsCust = createFormattedSheet(customerDebts.length > 0 ? customerDebts : [{"ملاحظة": "لا توجد ديون على الزبائن"}]);
         const wsMerch = createFormattedSheet(merchantDebts.length > 0 ? merchantDebts : [{"ملاحظة": "لا توجد ديون للتجار"}]);
 
-        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الديون");
         XLSX.utils.book_append_sheet(wb, wsCust, "ديون الزبائن (لنا)");
         XLSX.utils.book_append_sheet(wb, wsMerch, "ديون التجار (علينا)");
 
@@ -2080,4 +2062,3 @@
 </script>
 </body>
 </html>
-
