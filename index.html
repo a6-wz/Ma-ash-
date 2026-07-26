@@ -26,6 +26,7 @@
             background: #f8fafc; 
             color: #0f172a;
             transition: background-color 0.2s ease, color 0.2s ease;
+            touch-action: pan-y; /* يسمح بالتمرير العمودي فقط لعدم التعارض مع السحب الأفقية */
         }
         .ios-card { 
             background: #ffffff;
@@ -228,19 +229,25 @@
 <div id="appSection" class="max-w-7xl mx-auto space-y-6 hidden">
     
     <!-- Header -->
-    <header class="ios-card p-3 md:p-5 flex flex-col lg:flex-row justify-between items-center gap-4">
+    <header class="ios-card p-3 md:p-5 flex flex-col gap-4">
         
-        <!-- Top Bar: Title + User Info + Dark Mode -->
-        <div class="flex items-center justify-between w-full lg:w-auto gap-2">
+        <!-- Top Bar: Title + User Info + Logout Button + Dark Mode -->
+        <div class="flex items-center justify-between w-full gap-2">
             <div class="flex items-center gap-2.5">
                 <div class="w-10 h-10 md:w-12 md:h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-sm shrink-0">🍏</div>
                 <div>
                     <h1 class="text-base md:text-xl font-black text-slate-900 dark:text-white leading-tight">معاش</h1>
-                    <p class="text-slate-500 dark:text-slate-400 text-[11px] md:text-xs font-semibold">الحساب: <span id="userDisplayEmail" class="font-bold text-blue-600 dark:text-blue-400"></span></p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <p class="text-slate-500 dark:text-slate-400 text-[11px] md:text-xs font-semibold">الحساب: <span id="userDisplayEmail" class="font-bold text-blue-600 dark:text-blue-400"></span></p>
+                        <!-- زر خروج بجانب الحساب تماماً -->
+                        <button onclick="handleLogout()" title="تسجيل الخروج" class="text-[10px] text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 bg-red-50/80 dark:bg-red-950/40 hover:bg-red-100 px-2 py-0.5 rounded-lg font-bold transition border border-red-200/50 dark:border-red-900/40 shrink-0">
+                            🚪 خروج
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Theme Toggle & Small Logout Button -->
+            <!-- Theme Toggle -->
             <div class="flex items-center gap-2 shrink-0">
                 <button onclick="toggleDarkMode()" class="theme-toggle-btn text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 px-2.5 py-1.5 rounded-xl transition border border-slate-200 dark:border-slate-700 shrink-0 flex items-center gap-1">
                     🌙 <span class="hidden sm:inline">الوضع الداكن</span><span class="sm:hidden">داكن</span>
@@ -248,19 +255,12 @@
             </div>
         </div>
         
-        <!-- Navigation Tabs & Logout Button (صغير ودقيق) -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
-            <div class="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl grid grid-cols-2 sm:grid-cols-4 gap-1 text-xs font-extrabold border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
-                <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition active-tab text-center">الرئيسية والمالية</button>
-                <button id="navInventoryBtn" onclick="switchTab('inventory')" class="px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center">المخزن والمنتجات</button>
-                <button id="navDebtsBtn" onclick="switchTab('debts')" class="px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center">الديون 💳</button>
-                <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center">التجار</button>
-            </div>
-            
-            <!-- زر خروج دقيق وصغير -->
-            <button onclick="handleLogout()" title="تسجيل الخروج" class="text-[10px] text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 bg-red-50/60 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/50 px-2.5 py-1.5 rounded-lg font-bold transition border border-red-200/50 dark:border-red-900/30 shrink-0 text-center self-center opacity-80 hover:opacity-100">
-                🚪 خروج
-            </button>
+        <!-- Navigation Tabs (صف واحد بـ 4 أعمدة دائماً) -->
+        <div class="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl grid grid-cols-4 gap-1 text-[11px] sm:text-xs font-extrabold border border-slate-200 dark:border-slate-700 w-full overflow-x-auto">
+            <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition active-tab text-center truncate">الرئيسية والمالية</button>
+            <button id="navInventoryBtn" onclick="switchTab('inventory')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center truncate">المخزن والمنتجات</button>
+            <button id="navDebtsBtn" onclick="switchTab('debts')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center truncate">الديون 💳</button>
+            <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center truncate">التجار</button>
         </div>
     </header>
 
@@ -882,6 +882,9 @@
     let unsubscribeProducts = null;
     let unsubscribePackaging = null;
 
+    const mainTabs = ['dashboard', 'inventory', 'debts', 'merchants'];
+    let currentTabIdx = 0;
+
     function formatNumber(num, includeCurrency = true) {
         if (num === null || num === undefined || isNaN(num)) return '0 ' + (includeCurrency ? currencySymbol : '');
         const formatted = Number(num).toLocaleString('en-US', {
@@ -941,6 +944,9 @@
     function handleLogout() { auth.signOut(); }
 
     function switchTab(tabName) {
+        const idx = mainTabs.indexOf(tabName);
+        if (idx !== -1) currentTabIdx = idx;
+
         ['Dashboard', 'Inventory', 'Debts', 'Merchants'].forEach(t => {
             document.getElementById(`view${t}`).classList.add('hidden');
             document.getElementById(`nav${t}Btn`).classList.remove('active-tab');
@@ -952,6 +958,53 @@
 
         if (tabName === 'debts') renderDebtsTab();
         if (tabName === 'merchants') renderMerchants();
+    }
+
+    // SWIPE GESTURE IMPLEMENTATION
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+    const minSwipeDistance = 50;
+
+    document.addEventListener('touchstart', e => {
+        // تجنب تفعيل السحب إذا كان المستخدم يتفاعل مع النوافذ المنبثقة، الجداول القابلة للتمرير، أو حقول الإدخال
+        if (e.target.closest('.fixed') || e.target.closest('input') || e.target.closest('select') || e.target.closest('textarea') || e.target.closest('.overflow-x-auto')) {
+            touchStartX = 0;
+            touchStartY = 0;
+            return;
+        }
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', e => {
+        if (!touchStartX) return;
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipeGesture();
+    }, { passive: true });
+
+    function handleSwipeGesture() {
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        // التأكد من أن السحب أفقي وملموس
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+            if (deltaX < 0) {
+                // سحب إلى اليسار -> الذهاب للقائمة التالية
+                if (currentTabIdx < mainTabs.length - 1) {
+                    switchTab(mainTabs[currentTabIdx + 1]);
+                }
+            } else if (deltaX > 0) {
+                // سحب إلى اليمين -> العودة للقائمة السابقة
+                if (currentTabIdx > 0) {
+                    switchTab(mainTabs[currentTabIdx - 1]);
+                }
+            }
+        }
+        touchStartX = 0;
+        touchStartY = 0;
     }
 
     function listenToDatabase() {
