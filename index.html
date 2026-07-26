@@ -177,6 +177,19 @@
 <!-- Dynamic Toast Container -->
 <div id="toastContainer"></div>
 
+<!-- Custom Confirmation Dialog Modal -->
+<div id="confirmModal" class="fixed inset-0 bg-slate-950/75 z-[100] flex items-center justify-center p-3 md:p-4 hidden">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl relative border border-slate-200 dark:border-slate-700 text-center">
+        <div class="w-12 h-12 bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center mx-auto text-xl font-bold">⚠️</div>
+        <h3 id="confirmModalTitle" class="text-base font-black text-slate-900 dark:text-white">تأكيد الحذف</h3>
+        <p id="confirmModalMessage" class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed"></p>
+        <div class="flex gap-2 pt-2">
+            <button id="confirmModalCancelBtn" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2.5 rounded-xl text-xs transition">إلغاء</button>
+            <button id="confirmModalActionBtn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs transition active:scale-[0.98]">تأكيد الحذف</button>
+        </div>
+    </div>
+</div>
+
 <!-- Datalists Dynamic Autocomplete -->
 <datalist id="customersDatalist"></datalist>
 <datalist id="merchantsDatalist"></datalist>
@@ -217,7 +230,7 @@
     <!-- Header -->
     <header class="ios-card p-3 md:p-5 flex flex-col lg:flex-row justify-between items-center gap-4">
         
-        <!-- Top Bar: Title + User Info + Currency + Dark Mode -->
+        <!-- Top Bar: Title + User Info + Dark Mode -->
         <div class="flex items-center justify-between w-full lg:w-auto gap-2">
             <div class="flex items-center gap-2.5">
                 <div class="w-10 h-10 md:w-12 md:h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-sm shrink-0">🍏</div>
@@ -227,26 +240,15 @@
                 </div>
             </div>
 
-            <!-- Currency & Theme Toggle -->
+            <!-- Theme Toggle & Small Logout Button -->
             <div class="flex items-center gap-2 shrink-0">
-                <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <span class="text-[10px] md:text-xs font-bold text-slate-500 px-1 hidden sm:inline">العملة:</span>
-                    <select id="currencySelect" onchange="changeCurrency(this.value)" class="bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-xs font-black p-1.5 rounded-lg outline-none cursor-pointer">
-                        <option value="د.ع">د.ع</option>
-                        <option value="ر.س">ر.س</option>
-                        <option value="$">$</option>
-                        <option value="ج.م">ج.م</option>
-                        <option value="€">€</option>
-                    </select>
-                </div>
-
-                <button onclick="toggleDarkMode()" class="theme-toggle-btn text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 px-2.5 py-2 rounded-xl transition border border-slate-200 dark:border-slate-700 shrink-0 flex items-center gap-1">
+                <button onclick="toggleDarkMode()" class="theme-toggle-btn text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 px-2.5 py-1.5 rounded-xl transition border border-slate-200 dark:border-slate-700 shrink-0 flex items-center gap-1">
                     🌙 <span class="hidden sm:inline">الوضع الداكن</span><span class="sm:hidden">داكن</span>
                 </button>
             </div>
         </div>
         
-        <!-- Navigation Tabs & Logout (بدون سلايدر - شبكة ثابتة وقوائم واضحة) -->
+        <!-- Navigation Tabs & Logout Button (صغير ودقيق) -->
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
             <div class="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl grid grid-cols-2 sm:grid-cols-4 gap-1 text-xs font-extrabold border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
                 <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition active-tab text-center">الرئيسية والمالية</button>
@@ -254,8 +256,10 @@
                 <button id="navDebtsBtn" onclick="switchTab('debts')" class="px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center">الديون 💳</button>
                 <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center">التجار</button>
             </div>
-            <button onclick="handleLogout()" class="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/60 px-3.5 py-2 rounded-xl font-bold transition border border-red-100 dark:border-red-900/50 shrink-0 text-center">
-                خروج
+            
+            <!-- زر خروج دقيق وصغير -->
+            <button onclick="handleLogout()" title="تسجيل الخروج" class="text-[10px] text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 bg-red-50/60 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/50 px-2.5 py-1.5 rounded-lg font-bold transition border border-red-200/50 dark:border-red-900/30 shrink-0 text-center self-center opacity-80 hover:opacity-100">
+                🚪 خروج
             </button>
         </div>
     </header>
@@ -826,6 +830,28 @@
 
     db.enablePersistence({ synchronizeTabs: true }).catch(err => console.warn("Persistence:", err.code));
 
+    // Custom Confirmation Dialog Logic
+    let confirmActionHandler = null;
+
+    function showConfirmModal(title, message, onConfirm) {
+        document.getElementById('confirmModalTitle').innerText = title || "تأكيد الحذف";
+        document.getElementById('confirmModalMessage').innerText = message;
+        confirmActionHandler = onConfirm;
+        document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+        confirmActionHandler = null;
+    }
+
+    document.getElementById('confirmModalActionBtn').onclick = function() {
+        if (confirmActionHandler) confirmActionHandler();
+        closeConfirmModal();
+    };
+
+    document.getElementById('confirmModalCancelBtn').onclick = closeConfirmModal;
+
     // Toast Notification System
     function showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
@@ -843,8 +869,8 @@
         setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3500);
     }
 
-    // App State
-    let currencySymbol = localStorage.getItem('appCurrency') || 'د.ع';
+    // App State - Currency set fixed to د.ع
+    const currencySymbol = 'د.ع';
     let currentUser = null;
     let records = [];
     let products = [];
@@ -855,18 +881,6 @@
     let unsubscribeRecords = null;
     let unsubscribeProducts = null;
     let unsubscribePackaging = null;
-
-    document.getElementById('currencySelect').value = currencySymbol;
-
-    function changeCurrency(val) {
-        currencySymbol = val;
-        localStorage.setItem('appCurrency', val);
-        updateUI();
-        renderProducts();
-        renderDebtsTab();
-        renderMerchants();
-        showToast(`تم تغيير العملة إلى (${val})`);
-    }
 
     function formatNumber(num, includeCurrency = true) {
         if (num === null || num === undefined || isNaN(num)) return '0 ' + (includeCurrency ? currencySymbol : '');
@@ -1010,10 +1024,10 @@
 
     function deleteRecord(docId) {
         if (!currentUser) return;
-        if (confirm("هل تريد إزالة هذه المعاملة؟")) {
+        showConfirmModal("حذف معاملة", "هل أنت تأكد من حذف هذه المعاملة المالية من السجل؟", () => {
             db.collection('users').doc(currentUser.uid).collection('records').doc(docId).delete()
-                .then(() => showToast("تم مسح المعاملة"));
-        }
+                .then(() => showToast("تم مسح المعاملة بنجاح"));
+        });
     }
 
     // Partial Payment Logic
@@ -1276,7 +1290,9 @@
     }
 
     function deletePackagingType(id) {
-        if (confirm("حذف التعبئة؟")) db.collection('users').doc(currentUser.uid).collection('packagingTypes').doc(id).delete();
+        showConfirmModal("حذف نوع التعبئة", "هل أنت تأكد من حذف نوع التعبئة والتغليف هذا؟", () => {
+            db.collection('users').doc(currentUser.uid).collection('packagingTypes').doc(id).delete();
+        });
     }
 
     function populatePackagingDropdowns() {
@@ -1420,10 +1436,10 @@
     }
 
     function deleteSupplierStock(shipmentId) {
-        if (confirm("حذف هذه الشحنة؟")) {
+        showConfirmModal("حذف الشحنة", "هل أنت تأكد من حذف هذه الشحنة المسجلة من المخزون؟", () => {
             const updated = (currentSelectedProduct.suppliers || []).filter(s => s.id !== shipmentId);
             db.collection('users').doc(currentUser.uid).collection('products').doc(currentSelectedProduct.docId).update({ suppliers: updated });
-        }
+        });
     }
 
     // Spoilage Management
@@ -1655,7 +1671,7 @@
 
     function deleteMerchant(merchantName) {
         if (!currentUser) return;
-        if (confirm(`هل أنت تأكد من حذف التاجر (${merchantName}) وكافة شحناته ومعاملاته المرتبطة؟`)) {
+        showConfirmModal("حذف التاجر", `هل أنت تأكد من حذف التاجر (${merchantName}) وكافة شحناته ومعاملاته المرتبطة به؟`, () => {
             const batch = db.batch();
 
             records.forEach(r => {
@@ -1676,16 +1692,17 @@
             batch.commit().then(() => {
                 showToast(`تم حذف التاجر (${merchantName}) وجميع بياناته بنجاح`);
             }).catch(err => showToast(err.message, 'error'));
-        }
+        });
     }
 
     function deleteProduct() {
-        if (confirm(`حذف المنتج بالكامل (${currentSelectedProduct.name})؟`)) {
+        if (!currentSelectedProduct) return;
+        showConfirmModal("حذف المنتج", `هل أنت تأكد من حذف المنتج (${currentSelectedProduct.name}) بالكامل من المخزن؟`, () => {
             db.collection('users').doc(currentUser.uid).collection('products').doc(currentSelectedProduct.docId).delete().then(() => {
                 closeProductModal();
-                showToast("تم حذف المنتج");
+                showToast("تم حذف المنتج بنجاح");
             });
-        }
+        });
     }
 
     // EXCEL EXPORT SYSTEM
