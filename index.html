@@ -54,6 +54,21 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
+        /* 🎬 TAB TRANSITION ANIMATION */
+        .tab-view {
+            animation: fadeInTab 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeInTab {
+            from {
+                opacity: 0;
+                transform: translateY(6px) scale(0.995);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         /* 🌙 DARK MODE OVERRIDES */
         html.dark body {
             background-color: #0f172a;
@@ -231,26 +246,26 @@
     <!-- Header -->
     <header class="ios-card p-3 md:p-5 flex flex-col gap-4">
         
-        <!-- Top Bar: Title + User Info + Logout Button + Dark Mode -->
+        <!-- Top Bar: Title + User Info + Dark Mode & Logout Actions -->
         <div class="flex items-center justify-between w-full gap-2">
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-10 h-10 md:w-12 md:h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-sm shrink-0">🍏</div>
-                <div>
+                <div class="min-w-0">
                     <h1 class="text-base md:text-xl font-black text-slate-900 dark:text-white leading-tight">معاش</h1>
-                    <div class="flex items-center gap-2 mt-0.5">
-                        <p class="text-slate-500 dark:text-slate-400 text-[11px] md:text-xs font-semibold">الحساب: <span id="userDisplayEmail" class="font-bold text-blue-600 dark:text-blue-400"></span></p>
-                        <!-- زر خروج بجانب الحساب تماماً -->
-                        <button onclick="handleLogout()" title="تسجيل الخروج" class="text-[10px] text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 bg-red-50/80 dark:bg-red-950/40 hover:bg-red-100 px-2 py-0.5 rounded-lg font-bold transition border border-red-200/50 dark:border-red-900/40 shrink-0">
-                            🚪 خروج
-                        </button>
-                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 text-[11px] md:text-xs font-semibold truncate">
+                        الحساب: <span id="userDisplayEmail" class="font-bold text-blue-600 dark:text-blue-400"></span>
+                    </p>
                 </div>
             </div>
 
-            <!-- Theme Toggle -->
-            <div class="flex items-center gap-2 shrink-0">
+            <!-- Top Actions: Theme Toggle + Logout Button -->
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
                 <button onclick="toggleDarkMode()" class="theme-toggle-btn text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 px-2.5 py-1.5 rounded-xl transition border border-slate-200 dark:border-slate-700 shrink-0 flex items-center gap-1">
                     🌙 <span class="hidden sm:inline">الوضع الداكن</span><span class="sm:hidden">داكن</span>
+                </button>
+
+                <button onclick="handleLogout()" title="تسجيل الخروج" class="text-xs font-bold bg-red-50 hover:bg-red-100 dark:bg-red-950/50 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-200/60 dark:border-red-900/50 px-2.5 py-1.5 rounded-xl transition shrink-0 flex items-center gap-1 active:scale-95">
+                    🚪 <span class="hidden sm:inline">تسجيل الخروج</span><span class="sm:hidden">خروج</span>
                 </button>
             </div>
         </div>
@@ -265,7 +280,7 @@
     </header>
 
     <!-- VIEW 1: DASHBOARD & GENERAL TRANSACTIONS -->
-    <div id="viewDashboard" class="space-y-6">
+    <div id="viewDashboard" class="space-y-6 tab-view">
 
         <!-- KPI Summary Cards -->
         <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
@@ -319,7 +334,7 @@
     </div>
 
     <!-- VIEW 2: INVENTORY & PRODUCTS -->
-    <div id="viewInventory" class="space-y-6 hidden">
+    <div id="viewInventory" class="space-y-6 tab-view hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
                 <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">إدارة المخزن والمنتجات</h2>
@@ -364,7 +379,7 @@
     </div>
 
     <!-- VIEW 3: DEBTS MANAGEMENT -->
-    <div id="viewDebts" class="space-y-6 hidden">
+    <div id="viewDebts" class="space-y-6 tab-view hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
                 <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">💳 قسم إدارة الديون والتسديد الجزئي</h2>
@@ -425,7 +440,7 @@
     </div>
 
     <!-- VIEW 4: MERCHANTS -->
-    <div id="viewMerchants" class="space-y-6 hidden">
+    <div id="viewMerchants" class="space-y-6 tab-view hidden">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
                 <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">سجل التجار وحركات الشحنات والمبيعات</h2>
@@ -948,24 +963,32 @@
         if (idx !== -1) currentTabIdx = idx;
 
         ['Dashboard', 'Inventory', 'Debts', 'Merchants'].forEach(t => {
-            document.getElementById(`view${t}`).classList.add('hidden');
+            const el = document.getElementById(`view${t}`);
+            el.classList.add('hidden');
             document.getElementById(`nav${t}Btn`).classList.remove('active-tab');
         });
 
         const target = tabName.charAt(0).toUpperCase() + tabName.slice(1);
-        document.getElementById(`view${target}`).classList.remove('hidden');
+        const targetEl = document.getElementById(`view${target}`);
+        targetEl.classList.remove('hidden');
+        
+        // Trigger tab transition animation cleanly
+        targetEl.classList.remove('tab-view');
+        void targetEl.offsetWidth; // Force reflow
+        targetEl.classList.add('tab-view');
+
         document.getElementById(`nav${target}Btn`).classList.add('active-tab');
 
         if (tabName === 'debts') renderDebtsTab();
         if (tabName === 'merchants') renderMerchants();
     }
 
-    // SWIPE GESTURE IMPLEMENTATION
+    // REVERSED & MORE RESPONSIVE SWIPE GESTURE IMPLEMENTATION
     let touchStartX = 0;
     let touchStartY = 0;
     let touchEndX = 0;
     let touchEndY = 0;
-    const minSwipeDistance = 50;
+    const minSwipeDistance = 30; // تقليل الحد الأدنى لزيادة الحساسية
 
     document.addEventListener('touchstart', e => {
         // تجنب تفعيل السحب إذا كان المستخدم يتفاعل مع النوافذ المنبثقة، الجداول القابلة للتمرير، أو حقول الإدخال
@@ -989,17 +1012,17 @@
         const deltaX = touchEndX - touchStartX;
         const deltaY = touchEndY - touchStartY;
 
-        // التأكد من أن السحب أفقي وملموس
-        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+        // استجابة محسنة بالسماح بنسبة ميلان خفيفة
+        if (Math.abs(deltaX) > Math.abs(deltaY) * 1.2 && Math.abs(deltaX) > minSwipeDistance) {
             if (deltaX < 0) {
-                // سحب إلى اليسار -> الذهاب للقائمة التالية
-                if (currentTabIdx < mainTabs.length - 1) {
-                    switchTab(mainTabs[currentTabIdx + 1]);
-                }
-            } else if (deltaX > 0) {
-                // سحب إلى اليمين -> العودة للقائمة السابقة
+                // سحب إلى اليسار -> العودة للقائمة السابقة (معكوسة حسب طلبك)
                 if (currentTabIdx > 0) {
                     switchTab(mainTabs[currentTabIdx - 1]);
+                }
+            } else if (deltaX > 0) {
+                // سحب إلى اليمين -> الذهاب للقائمة التالية (معكوسة حسب طلبك)
+                if (currentTabIdx < mainTabs.length - 1) {
+                    switchTab(mainTabs[currentTabIdx + 1]);
                 }
             }
         }
@@ -1953,7 +1976,7 @@
         XLSX.utils.book_append_sheet(wb, wsMerch, "ديون التجار (علينا)");
 
         XLSX.writeFile(wb, `تقرير_الديون_الشامل_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast("تم تصدير تقرير الديون الشامل إلى Excel بنجاح");
+        showToast("تم تصدير تقرير الديون بنجاح 📊");
     }
 </script>
 </body>
