@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+[source: 2]<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -259,9 +259,8 @@
                         </button>
                     </div>
 
-                    <!-- Search and Date Filter Bar -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80">
-                        <input type="text" id="dashSearch" oninput="updateUI()" placeholder="🔍 بحث باسم الشخص أو البيان..." class="p-2 ios-input rounded-xl text-xs font-semibold">
+                    <!-- Date Filter Bar (تم حذف البحث بالاسم والبيان من هنا) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 bg-slate-50 p-2.5 rounded-2xl border border-slate-200/80">
                         <input type="date" id="dashDateFrom" onchange="updateUI()" class="p-2 ios-input rounded-xl text-xs font-semibold" placeholder="من تاريخ">
                         <input type="date" id="dashDateTo" onchange="updateUI()" class="p-2 ios-input rounded-xl text-xs font-semibold" placeholder="إلى تاريخ">
                     </div>
@@ -1104,6 +1103,7 @@
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     }
 
+    // تحديث الواجهة وحذف فلترة البحث بالاسم والبيان
     function updateUI() {
         const transactionsBody = document.getElementById('transactionsBody');
         if (!transactionsBody) return;
@@ -1112,7 +1112,6 @@
 
         let incomeSum = 0, expenseSum = 0, pendingUsSum = 0, pendingThemSum = 0;
 
-        const searchQuery = document.getElementById('dashSearch')?.value.toLowerCase() || '';
         const dateFrom = document.getElementById('dashDateFrom')?.value || '';
         const dateTo = document.getElementById('dashDateTo')?.value || '';
 
@@ -1125,12 +1124,11 @@
                 else if (r.type === 'دين علينا (لتاجر)') pendingThemSum += r.amount;
             }
 
-            // Filtering
-            const matchesSearch = r.personName?.toLowerCase().includes(searchQuery) || r.details?.toLowerCase().includes(searchQuery);
+            // التصفية بالتاريخ فقط
             const matchesFrom = !dateFrom || r.date >= dateFrom;
             const matchesTo = !dateTo || r.date <= dateTo;
 
-            if (r.status === 'مكتمل' && matchesSearch && matchesFrom && matchesTo) {
+            if (r.status === 'مكتمل' && matchesFrom && matchesTo) {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition";
                 tr.innerHTML = `
@@ -1632,7 +1630,7 @@
     }
 
     // ==========================================================
-    // EXCEL ADVANCED ARABIC & MULTI-SHEET EXPORT SYSTEM (مُحدث)
+    // EXCEL ADVANCED ARABIC & MULTI-SHEET EXPORT SYSTEM (مُحدث بالكامل)
     // ==========================================================
 
     // دالة مساعدة عامة لإنشاء شيت منسق يدعم اللغة العربية RTL والعرض التلقائي للأعمدة
@@ -1651,7 +1649,128 @@
         return ws;
     }
 
-    // 1. تصدير تقرير التاجر (البضاعة المستلمة + الديون + أسماء الزبائن المشتريين)
+    // 1. تصدير سجل المعاملات المكتملة المالي الاحترافي (مُحدث ومُرتب)
+    function exportToExcel() {
+        if (!records || records.length === 0) {
+            showToast("لا توجد بيانات للتصدير", "warning");
+            return;
+        }
+
+        const dateFrom = document.getElementById('dashDateFrom')?.value || '';
+        const dateTo = document.getElementById('dashDateTo')?.value || '';
+
+        // تصفية المعاملات المكتملة حسب التاريخ فقط
+        const filtered = records.filter(r => {
+            if (r.status !== 'مكتمل') return false;
+            const matchesFrom = !dateFrom || r.date >= dateFrom;
+            const matchesTo = !dateTo || r.date <= dateTo;
+            return matchesFrom && matchesTo;
+        });
+
+        const listToExport = filtered.length > 0 ? filtered : records.filter(r => r.status === 'مكتمل');
+
+        if (listToExport.length === 0) {
+            showToast("لا توجد معاملات مكتملة في الفترة المحددة للتصدير", "warning");
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        // أ) المبالغ والملخص
+        let totalIncome = 0;
+        let totalExpense = 0;
+
+        listToExport.forEach(r => {
+            if (r.type.includes('إيراد') || r.type.includes('دين لنا')) {
+                totalIncome += r.amount || 0;
+            } else if (r.type.includes('مصروف') || r.type.includes('خسارة') || r.type.includes('دين علينا')) {
+                totalExpense += r.amount || 0;
+            }
+        });
+
+        const netBalance = totalIncome - totalExpense;
+
+        // Sheet 1: الملخص المالي للحركات
+        const summaryData = [
+            { "البيان المالي": "إجمالي الإيرادات (+)", "المبلغ": totalIncome, "العملة": currencySymbol },
+            { "البيان المالي": "إجمالي المصروفات والخسائر (-)", "المبلغ": totalExpense, "العملة": currencySymbol },
+            { "البيان المالي": "الصافي المالي / الأرباح", "المبلغ": netBalance, "العملة": currencySymbol },
+            { "البيان المالي": "عدد المعاملات المسجلة", "المبلغ": listToExport.length, "العملة": "معاملة مكتملة" }
+        ];
+
+        // Sheet 2: سجل المعاملات التفصيلي الكامل (مرتب بجميع البيانات والأعمدة)
+        const allTransactionsFormatted = listToExport.map(r => ({
+            "التاريخ": r.date || '---',
+            "اسم الشخص / الجهة": r.personName || '---',
+            "نوع المعاملة": r.type || '---',
+            "المبلغ": r.amount !== undefined ? r.amount : 0,
+            "التاجر المورد": r.merchantName || '---',
+            "اسم المنتج": r.productName || '---',
+            "الوزن (كغم)": (r.soldKg !== undefined && r.soldKg !== null) ? r.soldKg : '---',
+            "عدد القطع": (r.soldPieces !== undefined && r.soldPieces !== null) ? r.soldPieces : '---',
+            "البيان والتفاصيل": r.details || '---'
+        }));
+
+        // Sheet 3: الإيرادات والمبيعات المقبوضة
+        const incomeData = listToExport.filter(r => r.type.includes('إيراد')).map(r => ({
+            "التاريخ": r.date || '---',
+            "اسم المشتري / الزبون": r.personName || '---',
+            "المبلغ المقبوض": r.amount || 0,
+            "اسم المنتج": r.productName || '---',
+            "الوزن (كغم)": r.soldKg ?? '---',
+            "عدد القطع": r.soldPieces ?? '---',
+            "التاجر المورد": r.merchantName || '---',
+            "البيان والتفاصيل": r.details || '---'
+        }));
+
+        // Sheet 4: المصروفات والمدفوعات الشراء
+        const expenseData = listToExport.filter(r => r.type.includes('مصروف') || r.type.includes('خسارة')).map(r => ({
+            "التاريخ": r.date || '---',
+            "الجهة / التاجر": r.personName || '---',
+            "المبلغ المدفوع": r.amount || 0,
+            "البيان والتفاصيل": r.details || '---'
+        }));
+
+        // تحديد قياسات وأبعاد الأعمدة بدقة لتجنب الخلل
+        const summaryCols = [{ wch: 30 }, { wch: 20 }, { wch: 15 }];
+        const allCols = [
+            { wch: 14 }, // التاريخ
+            { wch: 22 }, // اسم الشخص / الجهة
+            { wch: 20 }, // نوع المعاملة
+            { wch: 16 }, // المبلغ
+            { wch: 22 }, // التاجر المورد
+            { wch: 18 }, // اسم المنتج
+            { wch: 14 }, // الوزن (كغم)
+            { wch: 12 }, // عدد القطع
+            { wch: 35 }  // التفاصيل والبيان
+        ];
+
+        const incomeCols = [
+            { wch: 14 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 14 }, { wch: 12 }, { wch: 22 }, { wch: 35 }
+        ];
+
+        const expenseCols = [
+            { wch: 14 }, { wch: 22 }, { wch: 16 }, { wch: 40 }
+        ];
+
+        // إنشاء الشيتات
+        const wsSummary = createFormattedSheet(summaryData, summaryCols);
+        const wsAll = createFormattedSheet(allTransactionsFormatted, allCols);
+        const wsIncome = createFormattedSheet(incomeData.length > 0 ? incomeData : [{"ملاحظة": "لا توجد إيرادات في هذه الفترة"}], incomeCols);
+        const wsExpense = createFormattedSheet(expenseData.length > 0 ? expenseData : [{"ملاحظة": "لا توجد مصروفات في هذه الفترة"}], expenseCols);
+
+        // إضافة الشيتات إلى كتاب العمل
+        XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص المالي");
+        XLSX.utils.book_append_sheet(wb, wsAll, "سجل المعاملات الكلي");
+        XLSX.utils.book_append_sheet(wb, wsIncome, "الإيرادات والمبيعات");
+        XLSX.utils.book_append_sheet(wb, wsExpense, "المصروفات والمشتريات");
+
+        // تصدير وحفظ الملف
+        XLSX.writeFile(wb, `سجل_المعاملات_المالية_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast("تم تصدير سجل المعاملات المالية المكتملة بنجاح 📊");
+    }
+
+    // 2. تصدير تقرير التاجر (البضاعة المستلمة + الديون + أسماء الزبائن المشتريين)
     function exportMerchantToExcel(merchantName) {
         const wb = XLSX.utils.book_new();
 
@@ -1702,19 +1821,15 @@
             { "البيان": "المبلغ المتبقي علينا للتاجر (الدين الحالي)", "القيمة / المبلغ": pendingDebt }
         ];
 
-        // --- إنشاء الشيتات الثلاثة في ملف الإكسل ---
-        
-        // Sheet 1: ملخص الحساب والديون الباقية
+        // الشيتات الثلاثة
         const wsSummary = createFormattedSheet(summaryData, [{ wch: 40 }, { wch: 25 }]);
         XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص والديون");
 
-        // Sheet 2: البضائع الشحنات المستلمة
         const wsShipments = createFormattedSheet(mShipments.length > 0 ? mShipments : [{"ملاحظة": "لا توجد شحنات مسجلة لهذا التاجر"}], [
             { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 18 }, { wch: 16 }, { wch: 20 }
         ]);
         XLSX.utils.book_append_sheet(wb, wsShipments, "البضائع المستلمة");
 
-        // Sheet 3: الزبائن والمبيعات
         const wsSales = createFormattedSheet(mSalesFormatted.length > 0 ? mSalesFormatted : [{"ملاحظة": "لا توجد مبيعات مسجلة لبضاعة هذا التاجر"}], [
             { wch: 14 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 20 }, { wch: 30 }
         ]);
@@ -1724,7 +1839,7 @@
         showToast(`تم تصدير تقرير التاجر (${merchantName}) بنجاح`);
     }
 
-    // 2. تصدير تقرير الديون الشامل قسم إدارة الديون (شيت ديون التجار + شيت ديون الزبائن + ملخص)
+    // 3. تصدير تقرير الديون الشامل
     function exportDebtsToExcel() {
         const debts = records.filter(r => r.status === 'معلق');
         if (debts.length === 0) {
@@ -1734,7 +1849,7 @@
 
         const wb = XLSX.utils.book_new();
 
-        // ديون الزبائن (مبالغ لنا بحوزة الزبائن)
+        // ديون الزبائن
         const customerDebts = debts.filter(r => r.type.includes('دين لنا')).map(r => ({
             "التاريخ": r.date || '---',
             "اسم الزبون": r.personName || '---',
@@ -1744,7 +1859,7 @@
             "البيان / التفاصيل": r.details || '---'
         }));
 
-        // ديون التجار (مبالغ علينا للتجار)
+        // ديون التجار
         const merchantDebts = debts.filter(r => r.type.includes('دين علينا')).map(r => ({
             "التاريخ": r.date || '---',
             "اسم التاجر": r.personName || '---',
@@ -1753,7 +1868,6 @@
             "حالة الدين": "معلق"
         }));
 
-        // حسابات الإجمالي
         const totalCustDebt = customerDebts.reduce((sum, d) => sum + (d["المبلغ المتبقي (لنا)"] || 0), 0);
         const totalMerchDebt = merchantDebts.reduce((sum, d) => sum + (d["المبلغ المتبقي (علينا)"] || 0), 0);
 
@@ -1763,17 +1877,14 @@
             { "تصنيف الدين": "صافي موقف الديون (لنا - علينا)", "المبلغ الكلي": totalCustDebt - totalMerchDebt, "عدد المعاملات": customerDebts.length + merchantDebts.length }
         ];
 
-        // Sheet 1: ملخص موقف الديون
         const wsSummary = createFormattedSheet(summaryData, [{ wch: 40 }, { wch: 20 }, { wch: 15 }]);
         XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الديون");
 
-        // Sheet 2: شيت ديون الزبائن (لنا)
         const wsCust = createFormattedSheet(customerDebts.length > 0 ? customerDebts : [{"ملاحظة": "لا توجد ديون على الزبائن"}], [
             { wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 35 }
         ]);
         XLSX.utils.book_append_sheet(wb, wsCust, "ديون الزبائن (لنا)");
 
-        // Sheet 3: شيت ديون التجار (علينا)
         const wsMerch = createFormattedSheet(merchantDebts.length > 0 ? merchantDebts : [{"ملاحظة": "لا توجد ديون للتجار"}], [
             { wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 35 }, { wch: 15 }
         ]);
@@ -1781,49 +1892,6 @@
 
         XLSX.writeFile(wb, `تقرير_الديون_الشامل_${new Date().toISOString().split('T')[0]}.xlsx`);
         showToast("تم تصدير تقرير الديون الشامل إلى Excel بنجاح");
-    }
-
-    // 3. تصدير المعاملات المكتملة من الواجهة الرئيسية
-    function exportToExcel() {
-        if (!records || records.length === 0) {
-            showToast("لا توجد بيانات للتصدير", "warning");
-            return;
-        }
-
-        const searchQuery = document.getElementById('dashSearch')?.value.toLowerCase() || '';
-        const dateFrom = document.getElementById('dashDateFrom')?.value || '';
-        const dateTo = document.getElementById('dashDateTo')?.value || '';
-
-        const filtered = records.filter(r => {
-            if (r.status !== 'مكتمل') return false;
-            const matchesSearch = !searchQuery || r.personName?.toLowerCase().includes(searchQuery) || r.details?.toLowerCase().includes(searchQuery);
-            const matchesFrom = !dateFrom || r.date >= dateFrom;
-            const matchesTo = !dateTo || r.date <= dateTo;
-            return matchesSearch && matchesFrom && matchesTo;
-        });
-
-        const listToExport = filtered.length > 0 ? filtered : records.filter(r => r.status === 'مكتمل');
-        const formattedData = listToExport.map(r => ({
-            "التاريخ": r.date || '---',
-            "الاسم / الجهة": r.personName || '---',
-            "نوع المعاملة": r.type || '---',
-            "المبلغ": r.amount !== undefined ? r.amount : 0,
-            "اسم التاجر المورد": r.merchantName || '---',
-            "اسم المنتج": r.productName || '---',
-            "الوزن (كغم)": r.soldKg !== undefined && r.soldKg !== null ? r.soldKg : '---',
-            "عدد القطع": r.soldPieces !== undefined && r.soldPieces !== null ? r.soldPieces : '---',
-            "البيان / التفاصيل": r.details || '---',
-            "حالة المعاملة": r.status || '---'
-        }));
-
-        const wb = XLSX.utils.book_new();
-        const ws = createFormattedSheet(formattedData, [
-            { wch: 14 }, { wch: 22 }, { wch: 22 }, { wch: 16 }, { wch: 22 }, { wch: 18 }, { wch: 15 }, { wch: 12 }, { wch: 35 }, { wch: 14 }
-        ]);
-        XLSX.utils.book_append_sheet(wb, ws, "المعاملات المكتملة");
-
-        XLSX.writeFile(wb, `سجل_المعاملات_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast("تم تصدير سجل المعاملات إلى Excel بنجاح");
     }
 </script>
 </body>
