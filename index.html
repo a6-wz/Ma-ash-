@@ -1007,7 +1007,7 @@
         slider.style.transform = `translateX(${targetOffset}px)`;
     }
 
-    // REAL-TIME DIRECT TOUCH DRAG SLIDER ENGINE (REVERSED SWIPE DIRECTION)
+    // REAL-TIME DIRECT TOUCH DRAG SLIDER ENGINE
     let touchSliderInitialized = false;
 
     function initTouchSlider() {
@@ -1015,7 +1015,7 @@
         const slider = document.getElementById('viewsSlider');
         if (!viewport || !slider || touchSliderInitialized) return;
 
-        touchSliderInitialized = true; // لمنع ربط الأحداث أكثر من مرة وحل مشكلة القفز بين القوائم
+        touchSliderInitialized = true;
 
         let isDragging = false;
         let startX = 0;
@@ -1036,7 +1036,7 @@
             startX = clientX;
             startY = clientY;
             currentDeltaX = 0;
-            slider.style.transition = 'none'; // إلغاء الأنميشن أثناء سحب الإصبع لمتابعة اللمس بمرونة
+            slider.style.transition = 'none';
             return true;
         };
 
@@ -1063,7 +1063,6 @@
                 if (e && e.cancelable) e.preventDefault();
 
                 let effectiveDelta = deltaX;
-                // إعطاء تأثير مقاومة مرنة (مطاطي) عند الوصول لطرف القائمة الأولى أو الأخيرة
                 if (currentTabIdx === 0 && deltaX < 0) {
                     effectiveDelta = deltaX * 0.25;
                 } else if (currentTabIdx === mainTabs.length - 1 && deltaX > 0) {
@@ -1083,13 +1082,13 @@
 
             if (isHorizontalSwipe) {
                 const width = viewport.clientWidth;
-                const threshold = Math.min(width * 0.15, 65); // المسافة المطلوبة لإنهاء الانتقال
+                const threshold = Math.min(width * 0.15, 65);
                 let newIdx = currentTabIdx;
 
                 if (currentDeltaX > threshold && currentTabIdx < mainTabs.length - 1) {
-                    newIdx = currentTabIdx + 1; // سحب لليمين -> الانتقال للقائمة التالية
+                    newIdx = currentTabIdx + 1;
                 } else if (currentDeltaX < -threshold && currentTabIdx > 0) {
-                    newIdx = currentTabIdx - 1; // سحب لليسار -> العودة للقائمة السابقة
+                    newIdx = currentTabIdx - 1;
                 }
 
                 switchTab(mainTabs[newIdx], true);
@@ -1238,7 +1237,17 @@
         const record = records.find(r => r.docId === docId);
         if (!record) return;
 
+        if (payAmount <= 0) {
+            showToast("يرجى إدخال مبلغ سداد صحيح", "error");
+            return;
+        }
+
         const remaining = record.amount - payAmount;
+        if (remaining < 0) {
+            showToast("مبلغ السداد أكبر من الدين المتبقي", "error");
+            return;
+        }
+
         const batch = db.batch();
 
         const isCustomerDebt = record.type.includes('على زبون');
@@ -1249,6 +1258,7 @@
             createdAt: Date.now(),
             date: payDate,
             personName: record.personName,
+            merchantName: record.merchantName || record.personName,
             type: paymentType,
             amount: payAmount,
             details: `سداد من دين سابق: (${payNotes})`,
@@ -1901,10 +1911,8 @@
     }
 
     function exportToExcel() {
-        const listToExport = records.filter(r => r.status === 'مكتمل');
-
-        if (listToExport.length === 0) {
-            showToast("لا توجد معاملات مكتملة للتصدير", "warning");
+        if (records.length === 0) {
+            showToast("لا توجد سجلات للتصدير", "warning");
             return;
         }
 
@@ -1913,7 +1921,10 @@
         let totalIncome = 0;
         let totalExpense = 0;
 
-        listToExport.forEach(r => {
+        const completedRecords = records.filter(r => r.status === 'مكتمل');
+        const pendingRecords = records.filter(r => r.status === 'معلق' && r.amount > 0);
+
+        completedRecords.forEach(r => {
             if (r.type.includes('إيراد') || r.type.includes('تحصيل دين')) {
                 totalIncome += r.amount || 0;
             } else if (r.type.includes('مصروف') || r.type.includes('خسارة') || r.type.includes('سداد دين')) {
@@ -1921,16 +1932,21 @@
             }
         });
 
+        const pendingUsSum = pendingRecords.filter(r => r.type.includes('دين لنا')).reduce((s, r) => s + r.amount, 0);
+        const pendingThemSum = pendingRecords.filter(r => r.type.includes('دين علينا')).reduce((s, r) => s + r.amount, 0);
         const netBalance = totalIncome - totalExpense;
 
         const summaryData = [
             { "البيان المالي": "إجمالي الإيرادات والتحصيلات (+)", "المبلغ": totalIncome, "العملة": currencySymbol },
             { "البيان المالي": "إجمالي المصروفات والسدادات (-)", "المبلغ": totalExpense, "العملة": currencySymbol },
-            { "البيان المالي": "الصافي المالي / الأرباح", "المبلغ": netBalance, "العملة": currencySymbol },
-            { "البيان المالي": "عدد المعاملات المسجلة", "المبلغ": listToExport.length, "العملة": "معاملة مكتملة" }
+            { "البيان المالي": "الصافي المالي الفعلي", "المبلغ": netBalance, "العملة": currencySymbol },
+            { "البيان المالي": "إجمالي الديون لنا (على الزبائن)", "المبلغ": pendingUsSum, "العملة": currencySymbol },
+            { "البيان المالي": "إجمالي الديون علينا (لتجار)", "المبلغ": pendingThemSum, "العملة": currencySymbol },
+            { "البيان المالي": "عدد المعاملات المكتملة", "المبلغ": completedRecords.length, "العملة": "معاملة" },
+            { "البيان المالي": "عدد الديون المعلقة", "المبلغ": pendingRecords.length, "العملة": "دين معلق" }
         ];
 
-        const allTransactionsFormatted = listToExport.map(r => ({
+        const allTransactionsFormatted = completedRecords.map(r => ({
             "التاريخ": r.date || '---',
             "اسم الشخص / الجهة": r.personName || '---',
             "نوع المعاملة": r.type || '---',
@@ -1942,135 +1958,140 @@
             "البيان والتفاصيل": r.details || '---'
         }));
 
-        const incomeData = listToExport.filter(r => r.type.includes('إيراد') || r.type.includes('تحصيل دين')).map(r => ({
+        const pendingFormatted = pendingRecords.map(r => ({
             "التاريخ": r.date || '---',
-            "اسم المشتري / الزبون": r.personName || '---',
-            "نوع الحركة": r.type,
-            "المبلغ المقبوض": r.amount || 0,
+            "اسم الشخص / الجهة": r.personName || '---',
+            "نوع الدين": r.type || '---',
+            "المبلغ المتبقي الحالي": r.amount !== undefined ? r.amount : 0,
+            "التاجر المورد": r.merchantName || '---',
+            "الحالة": "معلق (غير مسدد)",
             "البيان والتفاصيل": r.details || '---'
         }));
 
-        const expenseData = listToExport.filter(r => r.type.includes('مصروف') || r.type.includes('خسارة') || r.type.includes('سداد دين')).map(r => ({
-            "التاريخ": r.date || '---',
-            "الجهة / التاجر": r.personName || '---',
-            "نوع الحركة": r.type,
-            "المبلغ المدفوع": r.amount || 0,
-            "البيان والتفاصيل": r.details || '---'
-        }));
-
-        const summaryCols = [{ wch: 30 }, { wch: 20 }, { wch: 15 }];
+        const summaryCols = [{ wch: 32 }, { wch: 20 }, { wch: 15 }];
         const allCols = [
             { wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 16 }, { wch: 22 }, { wch: 18 }, { wch: 14 }, { wch: 12 }, { wch: 35 }
         ];
 
         const wsSummary = createFormattedSheet(summaryData, summaryCols);
         const wsAll = createFormattedSheet(allTransactionsFormatted, allCols);
-        const wsIncome = createFormattedSheet(incomeData.length > 0 ? incomeData : [{"ملاحظة": "لا توجد إيرادات في هذه الفترة"}]);
-        const wsExpense = createFormattedSheet(expenseData.length > 0 ? expenseData : [{"ملاحظة": "لا توجد مصروفات في هذه الفترة"}]);
+        const wsPending = createFormattedSheet(pendingFormatted, allCols);
 
         XLSX.utils.book_append_sheet(wb, wsSummary, "الملخص المالي");
-        XLSX.utils.book_append_sheet(wb, wsAll, "سجل المعاملات الكلي");
-        XLSX.utils.book_append_sheet(wb, wsIncome, "الإيرادات والتحصيلات");
-        XLSX.utils.book_append_sheet(wb, wsExpense, "المصروفات والسدادات");
+        XLSX.utils.book_append_sheet(wb, wsAll, "المعاملات المكتملة");
+        XLSX.utils.book_append_sheet(wb, wsPending, "الديون المعلقة الحالية");
 
-        XLSX.writeFile(wb, `سجل_المعاملات_المالية_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast("تم تصدير سجل المعاملات المالية المكتملة بنجاح 📊");
-    }
-
-    function exportMerchantToExcel(merchantName) {
-        const wb = XLSX.utils.book_new();
-
-        const mShipments = [];
-        products.forEach(p => {
-            (p.suppliers || []).forEach(s => {
-                if (s.merchantName === merchantName) {
-                    mShipments.push({
-                        "التاريخ": s.date || '---',
-                        "اسم المنتج": p.name || '---',
-                        "طريقة التسديد": s.paymentMethod || 'عام',
-                        "سعر شراء الكيلو": s.buyPrice || 0,
-                        "نوع التعبئة": s.pkgType || '---',
-                        "عدد القطع الواردة": s.pieceCount || 0,
-                        "الوزن الإجمالي (كغم)": s.totalKg || 0,
-                        "التكلفة الإجمالية": s.totalCost || 0,
-                        "القطع المتبقية بالمخزن": s.remainingPieces ?? s.pieceCount ?? 0
-                    });
-                }
-            });
-        });
-
-        const mSales = records.filter(r => r.merchantName === merchantName && (r.type.includes('إيراد') || r.type.includes('دين لنا')));
-        const mSalesFormatted = mSales.map(r => ({
-            "التاريخ": r.date || '---',
-            "اسم الزبون المشتري": r.personName || '---',
-            "اسم المنتج": r.productName || '---',
-            "الوزن المباع (كغم)": r.soldKg !== undefined ? r.soldKg : '---',
-            "عدد القطع المباعة": r.soldPieces !== undefined ? r.soldPieces : '---',
-            "إجمالي مبلغ البيع": r.amount || 0,
-            "حالة الدفع (الزبون)": r.status === 'معلق' ? 'دين على الزبون' : 'نقداً (مكتمل)',
-            "التفاصيل / البيان": r.details || '---'
-        }));
-
-        const mRecords = records.filter(r => r.personName === merchantName || r.merchantName === merchantName);
-        const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتجار)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
-        const totalPaid = mRecords.filter(r => (r.type === 'مصروف (-)' || r.type === 'سداد دين لتاجر') && r.status === 'مكتمل').reduce((s, r) => s + r.amount, 0);
-
-        const mSummaryData = [
-            { "اسم التاجر": merchantName, "البيان": "إجمالي الديون المعلقة علينا", "المبلغ": pendingDebt, "العملة": currencySymbol },
-            { "اسم التاجر": merchantName, "البيان": "إجمالي المبالغ المسددة والمدفوعة", "المبلغ": totalPaid, "العملة": currencySymbol },
-            { "اسم التاجر": merchantName, "البيان": "عدد الشحنات الموردة", "المبلغ": mShipments.length, "العملة": "شحنة" },
-            { "اسم التاجر": merchantName, "البيان": "عدد عمليات البيع", "المبلغ": mSales.length, "العملة": "عملية بيع" }
-        ];
-
-        const wsMSummary = createFormattedSheet(mSummaryData);
-        const wsMShipments = createFormattedSheet(mShipments.length > 0 ? mShipments : [{"ملاحظة": "لا توجد شحنات مسجلة لهذا التاجر"}]);
-        const wsMSales = createFormattedSheet(mSalesFormatted.length > 0 ? mSalesFormatted : [{"ملاحظة": "لا توجد مبيعات مسجلة لهذا التاجر"}]);
-
-        XLSX.utils.book_append_sheet(wb, wsMSummary, "ملخص التاجر");
-        XLSX.utils.book_append_sheet(wb, wsMShipments, "سجل الشحنات الواردة");
-        XLSX.utils.book_append_sheet(wb, wsMSales, "سجل مبيعات التاجر");
-
-        XLSX.writeFile(wb, `تقرير_التاجر_${merchantName}_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast(`تم تصدير تقرير التاجر (${merchantName}) بنجاح 📊`);
+        const dateStr = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `تقرير_معاملات_معاش_${dateStr}.xlsx`);
+        showToast("تم تصدير تقرير Excel بنجاح");
     }
 
     function exportDebtsToExcel() {
+        const pendingRecords = records.filter(r => r.status === 'معلق' && r.amount > 0);
+
+        if (pendingRecords.length === 0) {
+            showToast("لا توجد ديون معلقة حالياً للتصدير", "warning");
+            return;
+        }
+
         const wb = XLSX.utils.book_new();
 
-        const customerDebts = records.filter(r => r.type.includes('دين لنا') && r.status === 'معلق').map(r => ({
+        const customerDebts = pendingRecords.filter(r => r.type.includes('دين لنا')).map(r => ({
             "التاريخ": r.date || '---',
             "اسم الزبون": r.personName || '---',
-            "نوع الدين": r.type,
-            "المبلغ المتبقي": r.amount || 0,
-            "البيان والتفاصيل": r.details || '---'
+            "نوع الدين": "دين لنا (على زبون)",
+            "المبلغ المتبقي لنا": r.amount || 0,
+            "التفاصيل / البيان": r.details || '---'
         }));
 
-        const merchantDebts = records.filter(r => r.type.includes('دين علينا') && r.status === 'معلق').map(r => ({
+        const merchantDebts = pendingRecords.filter(r => r.type.includes('دين علينا')).map(r => ({
             "التاريخ": r.date || '---',
             "اسم التاجر": r.personName || '---',
-            "نوع الدين": r.type,
-            "المبلغ المتبقي": r.amount || 0,
+            "نوع الدين": "دين علينا (لتجار)",
+            "المبلغ المتبقي علينا": r.amount || 0,
+            "التفاصيل / البيان": r.details || '---'
+        }));
+
+        const totalCust = customerDebts.reduce((s, r) => s + r["المبلغ المتبقي لنا"], 0);
+        const totalMerch = merchantDebts.reduce((s, r) => s + r["المبلغ المتبقي علينا"], 0);
+
+        const debtSummary = [
+            { "البيان": "إجمالي ديون لنا (على زبائن)", "المبلغ المتبقي": totalCust, "العملة": currencySymbol },
+            { "البيان": "إجمالي ديون علينا (لتجار)", "المبلغ المتبقي": totalMerch, "العملة": currencySymbol },
+            { "البيان": "الصافي (لنا - علينا)", "المبلغ المتبقي": totalCust - totalMerch, "العملة": currencySymbol }
+        ];
+
+        const wsSummary = createFormattedSheet(debtSummary, [{ wch: 30 }, { wch: 20 }, { wch: 15 }]);
+        const wsCust = createFormattedSheet(customerDebts, [{ wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 35 }]);
+        const wsMerch = createFormattedSheet(merchantDebts, [{ wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 35 }]);
+
+        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الديون");
+        if (customerDebts.length > 0) XLSX.utils.book_append_sheet(wb, wsCust, "ديون الزبائن (لنا)");
+        if (merchantDebts.length > 0) XLSX.utils.book_append_sheet(wb, wsMerch, "ديون التجار (علينا)");
+
+        const dateStr = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `تقرير_الديون_الشامل_${dateStr}.xlsx`);
+        showToast("تم تصدير تقرير الديون بنجاح");
+    }
+
+    function exportMerchantToExcel(merchantName) {
+        const mRecords = records.filter(r => r.personName === merchantName || r.merchantName === merchantName);
+        
+        const mShipments = [];
+        products.forEach(p => (p.suppliers || []).forEach(s => {
+            if (s.merchantName === merchantName) mShipments.push({ productName: p.name, ...s });
+        }));
+
+        if (mRecords.length === 0 && mShipments.length === 0) {
+            showToast("لا توجد بيانات مسجلة لهذا التاجر للتصدير", "warning");
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        const pendingDebt = mRecords.filter(r => r.type === 'دين علينا (لتجار)' && r.status === 'معلق').reduce((s, r) => s + r.amount, 0);
+        const totalPaid = mRecords.filter(r => (r.type === 'مصروف (-)' || r.type === 'سداد دين لتاجر') && r.status === 'مكتمل').reduce((s, r) => s + r.amount, 0);
+        const totalCostShipments = mShipments.reduce((s, sh) => s + (sh.totalCost || 0), 0);
+
+        const summary = [
+            { "البيان": "اسم التاجر", "القيمة": merchantName },
+            { "البيان": "إجمالي تكلفة الشحنات الواردة", "القيمة": `${totalCostShipments} ${currencySymbol}` },
+            { "البيان": "إجمالي المبالغ المسددة للتاجر", "القيمة": `${totalPaid} ${currencySymbol}` },
+            { "البيان": "إجمالي الدين المتبقي علينا حالياً", "القيمة": `${pendingDebt} ${currencySymbol}` },
+            { "البيان": "عدد الشحنات الموردة", "القيمة": `${mShipments.length} شحنة` }
+        ];
+
+        const shipmentsData = mShipments.map(s => ({
+            "التاريخ": s.date || '---',
+            "اسم المنتج": s.productName,
+            "نوع التعبئة": s.pkgType || 'عام',
+            "سعر شراء الكيلو": s.buyPrice || 0,
+            "العدد الوارد (قطع)": s.pieceCount || 0,
+            "الوزن الكلي (كغم)": s.totalKg || 0,
+            "إجمالي التكلفة": s.totalCost || 0,
+            "العدد المتبقي بالمخزن": s.remainingPieces ?? s.pieceCount,
+            "طريقة الشراء": s.paymentMethod || '---'
+        }));
+
+        const recordsData = mRecords.map(r => ({
+            "التاريخ": r.date || '---',
+            "نوع المعاملة": r.type,
+            "المبلغ": r.amount || 0,
+            "الحالة": r.status === 'معلق' ? 'معلق (دين متبقي)' : 'مكتمل',
             "البيان والتفاصيل": r.details || '---'
         }));
 
-        const totalCust = customerDebts.reduce((sum, r) => sum + r["المبلغ المتبقي"], 0);
-        const totalMerch = merchantDebts.reduce((sum, r) => sum + r["المبلغ المتبقي"], 0);
+        const wsSummary = createFormattedSheet(summary, [{ wch: 32 }, { wch: 25 }]);
+        const wsShipments = createFormattedSheet(shipmentsData, [{ wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 18 }, { wch: 16 }]);
+        const wsRecords = createFormattedSheet(recordsData, [{ wch: 14 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 35 }]);
 
-        const summaryData = [
-            { "نوع الدين": "إجمالي ديون الزبائن (مبالغ لنا بحوزة الزبائن)", "المبلغ الإجمالي": totalCust, "العملة": currencySymbol },
-            { "نوع الدين": "إجمالي ديون التجار (مبالغ علينا للتجار)", "المبلغ الإجمالي": totalMerch, "العملة": currencySymbol }
-        ];
+        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص التاجر");
+        if (shipmentsData.length > 0) XLSX.utils.book_append_sheet(wb, wsShipments, "الشحنات الموردة");
+        if (recordsData.length > 0) XLSX.utils.book_append_sheet(wb, wsRecords, "سجل الديون والمدفوعات");
 
-        const wsSummary = createFormattedSheet(summaryData);
-        const wsCust = createFormattedSheet(customerDebts.length > 0 ? customerDebts : [{"ملاحظة": "لا توجد ديون على زبائن حالياً"}]);
-        const wsMerch = createFormattedSheet(merchantDebts.length > 0 ? merchantDebts : [{"ملاحظة": "لا توجد ديون لتجار حالياً"}]);
-
-        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الديون");
-        XLSX.utils.book_append_sheet(wb, wsCust, "ديون الزبائن (لنا)");
-        XLSX.utils.book_append_sheet(wb, wsMerch, "ديون التجار (علينا)");
-
-        XLSX.writeFile(wb, `تقرير_الديون_الشامل_${new Date().toISOString().split('T')[0]}.xlsx`);
-        showToast("تم تصدير تقرير الديون الشامل بنجاح 📊");
+        const dateStr = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `تقرير_التاجر_${merchantName}_${dateStr}.xlsx`);
+        showToast(`تم تصدير تقرير التاجر (${merchantName}) بنجاح`);
     }
 </script>
 </body>
