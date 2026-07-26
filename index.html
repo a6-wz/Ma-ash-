@@ -26,7 +26,8 @@
             background: #f8fafc; 
             color: #0f172a;
             transition: background-color 0.2s ease, color 0.2s ease;
-            touch-action: pan-y; /* يسمح بالتمرير العمودي فقط لعدم التعارض مع السحب الأفقية */
+            touch-action: pan-y; /* يسمح بالتمرير العمودي لعدم التعارض مع السحب الأفقية */
+            overflow-x: hidden;
         }
         .ios-card { 
             background: #ffffff;
@@ -54,19 +55,18 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
-        /* 🎬 TAB TRANSITION ANIMATION */
-        .tab-view {
-            animation: fadeInTab 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        /* 🎬 VIEWPORT & SLIDER STYLES FOR TOUCH SWIPE */
+        #viewsViewport {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            touch-action: pan-y;
         }
-        @keyframes fadeInTab {
-            from {
-                opacity: 0;
-                transform: translateY(6px) scale(0.995);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+        #viewsSlider {
+            display: flex;
+            width: 100%;
+            align-items: flex-start;
+            will-change: transform;
         }
 
         /* 🌙 DARK MODE OVERRIDES */
@@ -270,186 +270,193 @@
             </div>
         </div>
         
-        <!-- Navigation Tabs (صف واحد بـ 4 أعمدة دائماً) -->
-        <div class="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl grid grid-cols-4 gap-1 text-[11px] sm:text-xs font-extrabold border border-slate-200 dark:border-slate-700 w-full overflow-x-auto">
-            <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition active-tab text-center truncate">الرئيسية والمالية</button>
-            <button id="navInventoryBtn" onclick="switchTab('inventory')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center truncate">المخزن والمنتجات</button>
-            <button id="navDebtsBtn" onclick="switchTab('debts')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center truncate">الديون 💳</button>
-            <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center truncate">التجار</button>
+        <!-- Navigation Tabs -->
+        <div class="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl grid grid-cols-4 gap-1 text-[10px] sm:text-xs font-extrabold border border-slate-200 dark:border-slate-700 w-full">
+            <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition active-tab text-center whitespace-normal break-words leading-tight flex items-center justify-center min-h-[42px]">الرئيسية والمالية</button>
+            <button id="navInventoryBtn" onclick="switchTab('inventory')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center whitespace-normal break-words leading-tight flex items-center justify-center min-h-[42px]">المخزن والمنتجات</button>
+            <button id="navDebtsBtn" onclick="switchTab('debts')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center whitespace-normal break-words leading-tight flex items-center justify-center min-h-[42px]">الديون 💳</button>
+            <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="px-1 sm:px-3 py-2 rounded-xl text-slate-600 dark:text-slate-300 transition text-center whitespace-normal break-words leading-tight flex items-center justify-center min-h-[42px]">التجار</button>
         </div>
     </header>
 
-    <!-- VIEW 1: DASHBOARD & GENERAL TRANSACTIONS -->
-    <div id="viewDashboard" class="space-y-6 tab-view">
+    <!-- VIEWS SLIDER CONTAINER FOR INTERACTIVE TOUCH SWIPE -->
+    <div id="viewsViewport">
+        <div id="viewsSlider">
 
-        <!-- KPI Summary Cards -->
-        <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
-            <div class="ios-card p-4 border-r-4 border-emerald-500">
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">إجمالي الإيرادات</p>
-                <h3 id="totalIncome" class="text-base md:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">0</h3>
-            </div>
-            <div class="ios-card p-4 border-r-4 border-red-500">
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">إجمالي المصروفات/الخسائر</p>
-                <h3 id="totalExpense" class="text-base md:text-xl font-black text-red-600 dark:text-red-400 mt-1">0</h3>
-            </div>
-            <div class="ios-card p-4 border-r-4 border-blue-500">
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">الصافي المالي</p>
-                <h3 id="netBalance" class="text-base md:text-xl font-black text-blue-600 dark:text-blue-400 mt-1">0</h3>
-            </div>
-            <div class="ios-card p-4 border-r-4 border-cyan-500">
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">ديون لنا (على زبائن)</p>
-                <h3 id="pendingUs" class="text-base md:text-xl font-black text-cyan-600 dark:text-cyan-400 mt-1">0</h3>
-            </div>
-            <div class="ios-card p-4 border-r-4 border-amber-500 col-span-2 lg:col-span-1">
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">ديون علينا (لتجار)</p>
-                <h3 id="pendingThem" class="text-base md:text-xl font-black text-amber-600 dark:text-amber-400 mt-1">0</h3>
-            </div>
-        </section>
+            <!-- VIEW 1: DASHBOARD & GENERAL TRANSACTIONS -->
+            <div id="viewDashboard" class="w-full shrink-0 min-w-full space-y-6">
 
-        <!-- Transactions Table Section -->
-        <div class="ios-card p-4 md:p-6 space-y-4">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 border-b dark:border-slate-700 pb-3 gap-3">
-                <h2 class="text-sm md:text-base font-black text-slate-900 dark:text-white">سجل المعاملات المكتملة</h2>
-                <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition active:scale-[0.98]">
-                    تصدير Excel 📊
-                </button>
-            </div>
+                <!-- KPI Summary Cards -->
+                <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+                    <div class="ios-card p-4 border-r-4 border-emerald-500">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">إجمالي الإيرادات</p>
+                        <h3 id="totalIncome" class="text-base md:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">0</h3>
+                    </div>
+                    <div class="ios-card p-4 border-r-4 border-red-500">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">إجمالي المصروفات/الخسائر</p>
+                        <h3 id="totalExpense" class="text-base md:text-xl font-black text-red-600 dark:text-red-400 mt-1">0</h3>
+                    </div>
+                    <div class="ios-card p-4 border-r-4 border-blue-500">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">الصافي المالي</p>
+                        <h3 id="netBalance" class="text-base md:text-xl font-black text-blue-600 dark:text-blue-400 mt-1">0</h3>
+                    </div>
+                    <div class="ios-card p-4 border-r-4 border-cyan-500">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">ديون لنا (على زبائن)</p>
+                        <h3 id="pendingUs" class="text-base md:text-xl font-black text-cyan-600 dark:text-cyan-400 mt-1">0</h3>
+                    </div>
+                    <div class="ios-card p-4 border-r-4 border-amber-500 col-span-2 lg:col-span-1">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold">ديون علينا (لتجار)</p>
+                        <h3 id="pendingThem" class="text-base md:text-xl font-black text-amber-600 dark:text-amber-400 mt-1">0</h3>
+                    </div>
+                </section>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-right text-xs">
-                    <thead class="text-slate-400 border-b border-slate-100 dark:border-slate-700 font-bold">
-                        <tr>
-                            <th class="pb-3 px-2">التاريخ</th>
-                            <th class="pb-3 px-2">الاسم</th>
-                            <th class="pb-3 px-2">النوع</th>
-                            <th class="pb-3 px-2">المبلغ</th>
-                            <th class="pb-3 px-2">البيان</th>
-                            <th class="pb-3 px-2 text-center">إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transactionsBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+                <!-- Transactions Table Section -->
+                <div class="ios-card p-4 md:p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 border-b dark:border-slate-700 pb-3 gap-3">
+                        <h2 class="text-sm md:text-base font-black text-slate-900 dark:text-white">سجل المعاملات المكتملة</h2>
+                        <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition active:scale-[0.98]">
+                            تصدير Excel 📊
+                        </button>
+                    </div>
 
-    <!-- VIEW 2: INVENTORY & PRODUCTS -->
-    <div id="viewInventory" class="space-y-6 tab-view hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div>
-                <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">إدارة المخزن والمنتجات</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">متابعة الكميات، تتبع التعبئة والتغليف، وتسجيل التالف</p>
-            </div>
-            <button onclick="openPackagingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs flex items-center gap-2 active:scale-[0.98]">
-                📦 إدارة أنواع التعبئة والتغليف
-            </button>
-        </div>
-
-        <div>
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-sm md:text-base font-black text-slate-800 dark:text-slate-200">قائمة المواد والمنتجات بالمخزن</h3>
-                <input type="text" id="productSearch" oninput="renderProducts()" placeholder="🔍 بحث عن منتج..." class="p-2 ios-input rounded-xl text-xs font-semibold w-48 sm:w-64">
-            </div>
-            <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"></div>
-        </div>
-
-        <div class="ios-card p-5 md:p-6">
-            <h2 class="text-sm md:text-base font-black mb-4 text-slate-900 dark:text-white border-b dark:border-slate-700 pb-3">إضافة منتج جديد للمخزن</h2>
-            <form id="addProductForm" class="grid grid-cols-1 md:grid-cols-3 gap-4" onsubmit="handleAddProduct(event)">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المادة / المنتج</label>
-                    <input type="text" id="newProductName" placeholder="مثلاً: تفاح، طماطة، خيار" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" required>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-right text-xs">
+                            <thead class="text-slate-400 border-b border-slate-100 dark:border-slate-700 font-bold">
+                                <tr>
+                                    <th class="pb-3 px-2">التاريخ</th>
+                                    <th class="pb-3 px-2">الاسم</th>
+                                    <th class="pb-3 px-2">النوع</th>
+                                    <th class="pb-3 px-2">المبلغ</th>
+                                    <th class="pb-3 px-2">البيان</th>
+                                    <th class="pb-3 px-2 text-center">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التصنيف</label>
-                    <select id="newProductCategory" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold bg-white dark:bg-slate-800">
-                        <option value="خضراوات">خضراوات</option>
-                        <option value="فواكه">فواكه</option>
-                        <option value="ورقيات">ورقيات</option>
-                        <option value="أخرى">أخرى</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs active:scale-[0.98]">
-                        + إضافة المنتج للمخزن
+            </div>
+
+            <!-- VIEW 2: INVENTORY & PRODUCTS -->
+            <div id="viewInventory" class="w-full shrink-0 min-w-full space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">إدارة المخزن والمنتجات</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">متابعة الكميات، تتبع التعبئة والتغليف، وتسجيل التالف</p>
+                    </div>
+                    <button onclick="openPackagingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs flex items-center gap-2 active:scale-[0.98]">
+                        📦 إدارة أنواع التعبئة والتغليف
                     </button>
                 </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- VIEW 3: DEBTS MANAGEMENT -->
-    <div id="viewDebts" class="space-y-6 tab-view hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div>
-                <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">💳 قسم إدارة الديون والتسديد الجزئي</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">تسديد كلي أو جزئي لديون الزبائن والتجار مع تصدير التقرير</p>
-            </div>
-            <button onclick="exportDebtsToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs flex items-center gap-2 active:scale-[0.98]">
-                📊 تصدير تقرير الديون الشامل (Excel)
-            </button>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- ديون الزبائن -->
-            <div class="ios-card p-5 md:p-6 border-t-4 border-cyan-500 space-y-4">
-                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
-                    <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                        <span>👤</span> ديون الزبائن (مبالغ لنا بحوزة الزبائن)
-                    </h3>
-                    <span id="tabCustomerDebtsTotal" class="font-black text-cyan-600 dark:text-cyan-400 text-sm">0</span>
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm md:text-base font-black text-slate-800 dark:text-slate-200">قائمة المواد والمنتجات بالمخزن</h3>
+                        <input type="text" id="productSearch" oninput="renderProducts()" placeholder="🔍 بحث عن منتج..." class="p-2 ios-input rounded-xl text-xs font-semibold w-48 sm:w-64">
+                    </div>
+                    <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"></div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right text-xs">
-                        <thead class="text-slate-400 border-b border-slate-100 dark:border-slate-700 font-bold">
-                            <tr>
-                                <th class="pb-2.5 px-2">التاريخ</th>
-                                <th class="pb-2.5 px-2">اسم الزبون</th>
-                                <th class="pb-2.5 px-2">المبلغ المتبقي</th>
-                                <th class="pb-2.5 px-2 text-center">إجراء التحصيل</th>
-                            </tr>
-                        </thead>
-                        <tbody id="customerDebtsTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
-                    </table>
+
+                <div class="ios-card p-5 md:p-6">
+                    <h2 class="text-sm md:text-base font-black mb-4 text-slate-900 dark:text-white border-b dark:border-slate-700 pb-3">إضافة منتج جديد للمخزن</h2>
+                    <form id="addProductForm" class="grid grid-cols-1 md:grid-cols-3 gap-4" onsubmit="handleAddProduct(event)">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المادة / المنتج</label>
+                            <input type="text" id="newProductName" placeholder="مثلاً: تفاح، طماطة، خيار" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التصنيف</label>
+                            <select id="newProductCategory" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold bg-white dark:bg-slate-800">
+                                <option value="خضراوات">خضراوات</option>
+                                <option value="فواكه">فواكه</option>
+                                <option value="ورقيات">ورقيات</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs active:scale-[0.98]">
+                                + إضافة المنتج للمخزن
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            <!-- ديون التجار -->
-            <div class="ios-card p-5 md:p-6 border-t-4 border-amber-500 space-y-4">
-                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
-                    <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                        <span>🏪</span> ديون التجار (مبالغ علينا للتجار)
-                    </h3>
-                    <span id="tabMerchantDebtsTotal" class="font-black text-amber-600 dark:text-amber-400 text-sm">0</span>
+            <!-- VIEW 3: DEBTS MANAGEMENT -->
+            <div id="viewDebts" class="w-full shrink-0 min-w-full space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">💳 قسم إدارة الديون والتسديد الجزئي</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">تسديد كلي أو جزئي لديون الزبائن والتجار مع تصدير التقرير</p>
+                    </div>
+                    <button onclick="exportDebtsToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs flex items-center gap-2 active:scale-[0.98]">
+                        📊 تصدير تقرير الديون الشامل (Excel)
+                    </button>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right text-xs">
-                        <thead class="text-slate-400 border-b border-slate-100 dark:border-slate-700 font-bold">
-                            <tr>
-                                <th class="pb-2.5 px-2">التاريخ</th>
-                                <th class="pb-2.5 px-2">اسم التاجر</th>
-                                <th class="pb-2.5 px-2">المبلغ المتبقي</th>
-                                <th class="pb-2.5 px-2 text-center">إجراء السداد</th>
-                            </tr>
-                        </thead>
-                        <tbody id="merchantDebtsTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
-                    </table>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- ديون الزبائن -->
+                    <div class="ios-card p-5 md:p-6 border-t-4 border-cyan-500 space-y-4">
+                        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
+                            <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>👤</span> ديون الزبائن (مبالغ لنا بحوزة الزبائن)
+                            </h3>
+                            <span id="tabCustomerDebtsTotal" class="font-black text-cyan-600 dark:text-cyan-400 text-sm">0</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right text-xs">
+                                <thead class="text-slate-400 border-b border-slate-100 dark:border-slate-700 font-bold">
+                                    <tr>
+                                        <th class="pb-2.5 px-2">التاريخ</th>
+                                        <th class="pb-2.5 px-2">اسم الزبون</th>
+                                        <th class="pb-2.5 px-2">المبلغ المتبقي</th>
+                                        <th class="pb-2.5 px-2 text-center">إجراء التحصيل</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customerDebtsTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ديون التجار -->
+                    <div class="ios-card p-5 md:p-6 border-t-4 border-amber-500 space-y-4">
+                        <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
+                            <h3 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>🏪</span> ديون التجار (مبالغ علينا للتجار)
+                            </h3>
+                            <span id="tabMerchantDebtsTotal" class="font-black text-amber-600 dark:text-amber-400 text-sm">0</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-right text-xs">
+                                <thead class="text-slate-400 border-b border-slate-100 dark:border-slate-700 font-bold">
+                                    <tr>
+                                        <th class="pb-2.5 px-2">التاريخ</th>
+                                        <th class="pb-2.5 px-2">اسم التاجر</th>
+                                        <th class="pb-2.5 px-2">المبلغ المتبقي</th>
+                                        <th class="pb-2.5 px-2 text-center">إجراء السداد</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="merchantDebtsTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- VIEW 4: MERCHANTS -->
-    <div id="viewMerchants" class="space-y-6 tab-view hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div>
-                <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">سجل التجار وحركات الشحنات والمبيعات</h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">تتبع تفصيلي لكل تاجر مع أرباح البضائع والمدفوعات</p>
+            <!-- VIEW 4: MERCHANTS -->
+            <div id="viewMerchants" class="w-full shrink-0 min-w-full space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h2 class="text-base md:text-lg font-black text-slate-900 dark:text-white">سجل التجار وحركات الشحنات والمبيعات</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">تتبع تفصيلي لكل تاجر مع أرباح البضائع والمدفوعات</p>
+                    </div>
+                    <input type="text" id="merchantSearch" oninput="renderMerchants()" placeholder="🔍 بحث عن تاجر..." class="p-2.5 ios-input rounded-xl text-xs font-semibold w-full sm:w-64">
+                </div>
+
+                <div id="merchantsList" class="space-y-6"></div>
             </div>
-            <input type="text" id="merchantSearch" oninput="renderMerchants()" placeholder="🔍 بحث عن تاجر..." class="p-2.5 ios-input rounded-xl text-xs font-semibold w-full sm:w-64">
-        </div>
 
-        <div id="merchantsList" class="space-y-6"></div>
+        </div>
     </div>
 
     <!-- PACKAGING TYPES MODAL -->
@@ -916,6 +923,7 @@
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('appSection').classList.remove('hidden');
             listenToDatabase();
+            switchTab('dashboard', false);
         } else {
             currentUser = null;
             records = [];
@@ -958,77 +966,169 @@
 
     function handleLogout() { auth.signOut(); }
 
-    function switchTab(tabName) {
+    // TAB NAVIGATION & REALTIME TOUCH SLIDER ENGINE
+    function switchTab(tabName, animate = true) {
         const idx = mainTabs.indexOf(tabName);
         if (idx !== -1) currentTabIdx = idx;
 
         ['Dashboard', 'Inventory', 'Debts', 'Merchants'].forEach(t => {
-            const el = document.getElementById(`view${t}`);
-            el.classList.add('hidden');
-            document.getElementById(`nav${t}Btn`).classList.remove('active-tab');
+            const btn = document.getElementById(`nav${t}Btn`);
+            if (btn) btn.classList.remove('active-tab');
         });
 
         const target = tabName.charAt(0).toUpperCase() + tabName.slice(1);
-        const targetEl = document.getElementById(`view${target}`);
-        targetEl.classList.remove('hidden');
-        
-        // Trigger tab transition animation cleanly
-        targetEl.classList.remove('tab-view');
-        void targetEl.offsetWidth; // Force reflow
-        targetEl.classList.add('tab-view');
+        const activeBtn = document.getElementById(`nav${target}Btn`);
+        if (activeBtn) activeBtn.classList.add('active-tab');
 
-        document.getElementById(`nav${target}Btn`).classList.add('active-tab');
+        updateSliderPosition(currentTabIdx, animate);
 
         if (tabName === 'debts') renderDebtsTab();
         if (tabName === 'merchants') renderMerchants();
     }
 
-    // REVERSED & MORE RESPONSIVE SWIPE GESTURE IMPLEMENTATION
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
-    const minSwipeDistance = 30; // تقليل الحد الأدنى لزيادة الحساسية
+    function updateSliderPosition(tabIdx, animate = true) {
+        const viewport = document.getElementById('viewsViewport');
+        const slider = document.getElementById('viewsSlider');
+        if (!viewport || !slider) return;
 
-    document.addEventListener('touchstart', e => {
-        // تجنب تفعيل السحب إذا كان المستخدم يتفاعل مع النوافذ المنبثقة، الجداول القابلة للتمرير، أو حقول الإدخال
-        if (e.target.closest('.fixed') || e.target.closest('input') || e.target.closest('select') || e.target.closest('textarea') || e.target.closest('.overflow-x-auto')) {
-            touchStartX = 0;
-            touchStartY = 0;
-            return;
+        const width = viewport.clientWidth;
+        const targetOffset = tabIdx * width;
+
+        if (animate) {
+            slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+        } else {
+            slider.style.transition = 'none';
         }
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
+        slider.style.transform = `translateX(${targetOffset}px)`;
+    }
 
-    document.addEventListener('touchend', e => {
-        if (!touchStartX) return;
-        touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY;
-        handleSwipeGesture();
-    }, { passive: true });
+    // REAL-TIME DIRECT TOUCH DRAG SLIDER ENGINE
+    function initTouchSlider() {
+        const viewport = document.getElementById('viewsViewport');
+        const slider = document.getElementById('viewsSlider');
+        if (!viewport || !slider) return;
 
-    function handleSwipeGesture() {
-        const deltaX = touchEndX - touchStartX;
-        const deltaY = touchEndY - touchStartY;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let currentDeltaX = 0;
+        let isHorizontalSwipe = false;
+        let isGestureDetermined = false;
 
-        // استجابة محسنة بالسماح بنسبة ميلان خفيفة
-        if (Math.abs(deltaX) > Math.abs(deltaY) * 1.2 && Math.abs(deltaX) > minSwipeDistance) {
-            if (deltaX < 0) {
-                // سحب إلى اليسار -> العودة للقائمة السابقة (معكوسة حسب طلبك)
-                if (currentTabIdx > 0) {
-                    switchTab(mainTabs[currentTabIdx - 1]);
-                }
-            } else if (deltaX > 0) {
-                // سحب إلى اليمين -> الذهاب للقائمة التالية (معكوسة حسب طلبك)
-                if (currentTabIdx < mainTabs.length - 1) {
-                    switchTab(mainTabs[currentTabIdx + 1]);
+        const onStart = (clientX, clientY, target) => {
+            // تجاهل التفاعل إذا بدأ الضغط داخل نافذة منبثقة أو حقول إدخال أو جدول قابل للتمرير
+            if (target.closest('.fixed') || target.closest('input') || target.closest('select') || target.closest('textarea') || target.closest('.overflow-x-auto') || target.closest('button')) {
+                return false;
+            }
+            isDragging = true;
+            isGestureDetermined = false;
+            isHorizontalSwipe = false;
+            startX = clientX;
+            startY = clientY;
+            currentDeltaX = 0;
+            slider.style.transition = 'none'; // إلغاء الحركة لتتبع الاصبع فوراً وبدون تأخير
+            return true;
+        };
+
+        const onMove = (clientX, clientY, e) => {
+            if (!isDragging) return;
+
+            const deltaX = clientX - startX;
+            const deltaY = clientY - startY;
+
+            if (!isGestureDetermined) {
+                if (Math.abs(deltaX) > 6 || Math.abs(deltaY) > 6) {
+                    isGestureDetermined = true;
+                    if (Math.abs(deltaX) > Math.abs(deltaY) * 1.1) {
+                        isHorizontalSwipe = true;
+                    } else {
+                        isHorizontalSwipe = false;
+                        isDragging = false; // تمرير عمودي عادي للصفحة
+                        return;
+                    }
                 }
             }
-        }
-        touchStartX = 0;
-        touchStartY = 0;
+
+            if (isHorizontalSwipe) {
+                if (e && e.cancelable) e.preventDefault(); // منع التذبذب العمودي أثناء السحب الأفقي
+
+                let effectiveDelta = deltaX;
+                // تأثير المطاط عند أطراف القوائم (الأولى والأخيرة)
+                if (currentTabIdx === 0 && deltaX < 0) {
+                    effectiveDelta = deltaX * 0.2;
+                } else if (currentTabIdx === mainTabs.length - 1 && deltaX > 0) {
+                    effectiveDelta = deltaX * 0.2;
+                }
+
+                currentDeltaX = effectiveDelta;
+                const width = viewport.clientWidth;
+                const baseOffset = currentTabIdx * width;
+                slider.style.transform = `translateX(${baseOffset + currentDeltaX}px)`;
+            }
+        };
+
+        const onEnd = () => {
+            if (!isDragging) return;
+            isDragging = false;
+
+            if (isHorizontalSwipe) {
+                const width = viewport.clientWidth;
+                const threshold = Math.min(width * 0.18, 75); // نسبة 18% من الشاشة لإكمال الانتقال
+                let newIdx = currentTabIdx;
+
+                if (currentDeltaX > threshold && currentTabIdx < mainTabs.length - 1) {
+                    newIdx = currentTabIdx + 1; // سحب لليمين -> انتقل للقائمة التالية
+                } else if (currentDeltaX < -threshold && currentTabIdx > 0) {
+                    newIdx = currentTabIdx - 1; // سحب لليسار -> انتقل للقائمة السابقة
+                }
+
+                switchTab(mainTabs[newIdx], true);
+            }
+        };
+
+        // أحداث اللمس بالجوال
+        viewport.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                onStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
+            }
+        }, { passive: true });
+
+        viewport.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1) {
+                onMove(e.touches[0].clientX, e.touches[0].clientY, e);
+            }
+        }, { passive: false });
+
+        viewport.addEventListener('touchend', onEnd, { passive: true });
+        viewport.addEventListener('touchcancel', onEnd, { passive: true });
+
+        // أحداث الفأرة للكمبيوتر/التجربة
+        let isMouseDown = false;
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0 && onStart(e.clientX, e.clientY, e.target)) {
+                isMouseDown = true;
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isMouseDown) onMove(e.clientX, e.clientY, e);
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isMouseDown) {
+                isMouseDown = false;
+                onEnd();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            updateSliderPosition(currentTabIdx, false);
+        });
     }
+
+    // Initialize Touch Engine
+    document.addEventListener('DOMContentLoaded', initTouchSlider);
+    setTimeout(initTouchSlider, 500);
 
     function listenToDatabase() {
         if (!currentUser) return;
@@ -1407,7 +1507,7 @@
                 </div>
                 
                 <div class="my-3 text-center">
-                    <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white">${p.name}</h3>
+                    <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white whitespace-normal break-words">${p.name}</h3>
                     <p class="text-[10px] text-slate-400 font-semibold mt-0.5">الشحنات: ${suppliers.length}</p>
                 </div>
                 
@@ -1961,18 +2061,17 @@
         const totalMerchDebt = merchantDebts.reduce((sum, d) => sum + (d["المبلغ المتبقي (علينا)"] || 0), 0);
 
         const summaryData = [
-            { "تصنيف الدين": "إجمالي ديون الزبائن (مبالغ لنا)", "المبلغ الكلي": totalCustDebt, "عدد المعاملات": customerDebts.length },
-            { "تصنيف الدين": "إجمالي ديون التجار (مبالغ علينا)", "المبلغ الكلي": totalMerchDebt, "عدد المعاملات": merchantDebts.length },
-            { "تصنيف الدين": "صافي موقف الديون (لنا - علينا)", "المبلغ الكلي": totalCustDebt - totalMerchDebt, "عدد المعاملات": customerDebts.length + merchantDebts.length }
+            { "النوع": "إجمالي ديون الزبائن (مبالغ لنا)", "المبلغ": totalCustDebt, "العملة": currencySymbol },
+            { "النوع": "إجمالي ديون التجار (مبالغ علينا)", "المبلغ": totalMerchDebt, "العملة": currencySymbol },
+            { "النوع": "الصافي للديون (لنا - علينا)", "المبلغ": totalCustDebt - totalMerchDebt, "العملة": currencySymbol }
         ];
 
-        const wsSummary = createFormattedSheet(summaryData, [{ wch: 40 }, { wch: 20 }, { wch: 15 }]);
-        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الديون");
-
+        const wsSummary = createFormattedSheet(summaryData, [{ wch: 35 }, { wch: 20 }, { wch: 15 }]);
         const wsCust = createFormattedSheet(customerDebts.length > 0 ? customerDebts : [{"ملاحظة": "لا توجد ديون على الزبائن"}]);
-        XLSX.utils.book_append_sheet(wb, wsCust, "ديون الزبائن (لنا)");
-
         const wsMerch = createFormattedSheet(merchantDebts.length > 0 ? merchantDebts : [{"ملاحظة": "لا توجد ديون للتجار"}]);
+
+        XLSX.utils.book_append_sheet(wb, wsSummary, "ملخص الديون");
+        XLSX.utils.book_append_sheet(wb, wsCust, "ديون الزبائن (لنا)");
         XLSX.utils.book_append_sheet(wb, wsMerch, "ديون التجار (علينا)");
 
         XLSX.writeFile(wb, `تقرير_الديون_الشامل_${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -1981,3 +2080,4 @@
 </script>
 </body>
 </html>
+
