@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معاش</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <!-- خط تجوال عالي الوضوح -->
@@ -20,6 +25,7 @@
             font-family: 'Tajawal', sans-serif; 
             background: #f1f5f9; 
             color: #0f172a;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         .ios-card { 
             background: rgba(255, 255, 255, 0.95);
@@ -46,6 +52,61 @@
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff !important; 
             box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        /* 🌙 DARK MODE OVERRIDES */
+        html.dark body {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        html.dark .ios-card {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: #334155;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        html.dark .ios-input {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+        html.dark .ios-input:focus {
+            background-color: #0f172a;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+        html.dark .bg-slate-100, html.dark .bg-slate-50, html.dark .bg-slate-100\/80 {
+            background-color: #1e293b !important;
+        }
+        html.dark .bg-white {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+        }
+        html.dark .border-slate-100, html.dark .border-slate-200, html.dark .border-slate-200\/80 {
+            border-color: #334155 !important;
+        }
+        html.dark .text-slate-900, html.dark .text-slate-800, html.dark .text-slate-700 {
+            color: #f1f5f9 !important;
+        }
+        html.dark .text-slate-600, html.dark .text-slate-500 {
+            color: #94a3b8 !important;
+        }
+        html.dark .text-slate-400 {
+            color: #64748b !important;
+        }
+        html.dark .hover\:bg-slate-50:hover {
+            background-color: #334155 !important;
+        }
+        html.dark .hover\:bg-slate-200:hover {
+            background-color: #475569 !important;
+        }
+        html.dark select {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+        html.dark #printableInvoice {
+            background-color: #0f172a !important;
+            border-color: #334155 !important;
         }
 
         table th, table td {
@@ -102,10 +163,13 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
+        html.dark ::-webkit-scrollbar-track { background: #0f172a; }
+        html.dark ::-webkit-scrollbar-thumb { background: #334155; }
+
         @media print {
             body * { visibility: hidden; }
             #printableInvoice, #printableInvoice * { visibility: visible; }
-            #printableInvoice { position: absolute; left: 0; top: 0; width: 100%; }
+            #printableInvoice { position: absolute; left: 0; top: 0; width: 100%; color: #000 !important; background: #fff !important; }
         }
     </style>
 </head>
@@ -119,9 +183,12 @@
 <datalist id="merchantsDatalist"></datalist>
 
 <!-- Auth Section -->
-<div id="authSection" class="max-w-md mx-auto my-12 ios-card p-8 text-center space-y-6">
-    <div class="space-y-2">
-        <div class="w-20 h-20 bg-gradient-to-tr from-blue-500 to-indigo-600 text-white rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-lg shadow-blue-200">🍏</div>
+<div id="authSection" class="max-w-md mx-auto my-12 ios-card p-8 text-center space-y-6 relative">
+    <button onclick="toggleDarkMode()" class="theme-toggle-btn absolute top-4 left-4 text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 px-3 py-1.5 rounded-xl transition">
+        🌙 الوضع الداكن
+    </button>
+    <div class="space-y-2 pt-2">
+        <div class="w-20 h-20 bg-gradient-to-tr from-blue-500 to-indigo-600 text-white rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-lg shadow-blue-200 dark:shadow-none">🍏</div>
         <h1 class="text-2xl font-black text-slate-900 mt-3">معاش</h1>
         <p class="text-slate-500 text-xs font-semibold">قم بتسجيل الدخول لإدارة معاملاتك ومخزونك سحابياً</p>
     </div>
@@ -136,11 +203,11 @@
             <input type="password" id="authPassword" class="w-full p-3.5 ios-input rounded-xl outline-none text-sm font-semibold" placeholder="••••••••" required>
         </div>
 
-        <p id="authError" class="text-xs text-red-600 hidden text-center font-bold bg-red-50 p-3 rounded-xl border border-red-100"></p>
+        <p id="authError" class="text-xs text-red-600 hidden text-center font-bold bg-red-50 dark:bg-red-900/30 p-3 rounded-xl border border-red-100 dark:border-red-800"></p>
 
         <div class="flex gap-3 pt-2">
-            <button type="button" onclick="handleLogin()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition text-sm shadow-md shadow-blue-200 active:scale-[0.98]">تسجيل الدخول</button>
-            <button type="button" onclick="handleRegister()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3.5 rounded-xl transition text-sm active:scale-[0.98]">حساب جديد</button>
+            <button type="button" onclick="handleLogin()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition text-sm shadow-md shadow-blue-200 dark:shadow-none active:scale-[0.98]">تسجيل الدخول</button>
+            <button type="button" onclick="handleRegister()" class="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold py-3.5 rounded-xl transition text-sm active:scale-[0.98]">حساب جديد</button>
         </div>
     </form>
 </div>
@@ -152,35 +219,41 @@
     <header class="ios-card p-4 md:p-5 flex flex-col lg:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-md shadow-emerald-200 shrink-0">🛒</div>
+                <div class="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-md shadow-emerald-200 dark:shadow-none shrink-0">🛒</div>
                 <div>
                     <h1 class="text-base md:text-xl font-black text-slate-900">معاش</h1>
-                    <p class="text-slate-500 text-xs mt-0.5 font-semibold">الحساب: <span id="userDisplayEmail" class="font-bold text-blue-600"></span></p>
+                    <p class="text-slate-500 text-xs mt-0.5 font-semibold">الحساب: <span id="userDisplayEmail" class="font-bold text-blue-600 dark:text-blue-400"></span></p>
                 </div>
             </div>
 
-            <!-- Currency Switcher Select -->
-            <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                <span class="text-xs font-bold text-slate-500 px-1">العملة:</span>
-                <select id="currencySelect" onchange="changeCurrency(this.value)" class="bg-white text-xs font-black p-1.5 rounded-lg outline-none cursor-pointer">
-                    <option value="د.ع">د.ع (دينار)</option>
-                    <option value="ر.س">ر.س (ريال)</option>
-                    <option value="$">$ (دولار)</option>
-                    <option value="ج.م">ج.م (جنيه)</option>
-                    <option value="€">€ (يورو)</option>
-                </select>
+            <!-- Controls: Currency & Theme -->
+            <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="text-xs font-bold text-slate-500 px-1">العملة:</span>
+                    <select id="currencySelect" onchange="changeCurrency(this.value)" class="bg-white dark:bg-slate-700 text-xs font-black p-1.5 rounded-lg outline-none cursor-pointer">
+                        <option value="د.ع">د.ع (دينار)</option>
+                        <option value="ر.س">ر.س (ريال)</option>
+                        <option value="$">$ (دولار)</option>
+                        <option value="ج.م">ج.م (جنيه)</option>
+                        <option value="€">€ (يورو)</option>
+                    </select>
+                </div>
+
+                <button onclick="toggleDarkMode()" class="theme-toggle-btn text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 px-3 py-2 rounded-xl transition border border-slate-200 dark:border-slate-700 shrink-0">
+                    🌙 الوضع الداكن
+                </button>
             </div>
         </div>
         
         <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end overflow-x-auto pb-1 lg:pb-0">
             <!-- Navigation Tabs -->
-            <div class="bg-slate-100/80 p-1.5 rounded-2xl flex gap-1 text-xs font-extrabold shrink-0">
-                <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="px-4 py-2.5 rounded-xl text-slate-600 transition active-tab whitespace-nowrap">الرئيسية والمالية</button>
-                <button id="navInventoryBtn" onclick="switchTab('inventory')" class="px-4 py-2.5 rounded-xl text-slate-600 transition whitespace-nowrap">المخزن والمنتجات</button>
-                <button id="navDebtsBtn" onclick="switchTab('debts')" class="px-4 py-2.5 rounded-xl text-slate-600 transition whitespace-nowrap">قسم الديون 💳</button>
-                <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="px-4 py-2.5 rounded-xl text-slate-600 transition whitespace-nowrap">التجار</button>
+            <div class="bg-slate-100/80 dark:bg-slate-800 p-1.5 rounded-2xl flex gap-1 text-xs font-extrabold shrink-0 border border-slate-200 dark:border-slate-700">
+                <button id="navDashboardBtn" onclick="switchTab('dashboard')" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 transition active-tab whitespace-nowrap">الرئيسية والمالية</button>
+                <button id="navInventoryBtn" onclick="switchTab('inventory')" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 transition whitespace-nowrap">المخزن والمنتجات</button>
+                <button id="navDebtsBtn" onclick="switchTab('debts')" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 transition whitespace-nowrap">قسم الديون 💳</button>
+                <button id="navMerchantsBtn" onclick="switchTab('merchants')" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 transition whitespace-nowrap">التجار</button>
             </div>
-            <button onclick="handleLogout()" class="text-xs text-red-600 bg-red-50 hover:bg-red-100 px-3.5 py-2.5 rounded-xl font-bold transition border border-red-100 shrink-0">
+            <button onclick="handleLogout()" class="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 px-3.5 py-2.5 rounded-xl font-bold transition border border-red-100 dark:border-red-900/50 shrink-0">
                 خروج
             </button>
         </div>
@@ -193,29 +266,29 @@
         <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
             <div class="ios-card p-4 border-r-4 border-emerald-500">
                 <p class="text-xs text-slate-500 font-bold">إجمالي الإيرادات</p>
-                <h3 id="totalIncome" class="text-base md:text-xl font-black text-emerald-600 mt-1">0</h3>
+                <h3 id="totalIncome" class="text-base md:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">0</h3>
             </div>
             <div class="ios-card p-4 border-r-4 border-red-500">
                 <p class="text-xs text-slate-500 font-bold">إجمالي المصروفات/الخسائر</p>
-                <h3 id="totalExpense" class="text-base md:text-xl font-black text-red-600 mt-1">0</h3>
+                <h3 id="totalExpense" class="text-base md:text-xl font-black text-red-600 dark:text-red-400 mt-1">0</h3>
             </div>
             <div class="ios-card p-4 border-r-4 border-blue-500">
                 <p class="text-xs text-slate-500 font-bold">الصافي المالي</p>
-                <h3 id="netBalance" class="text-base md:text-xl font-black text-blue-600 mt-1">0</h3>
+                <h3 id="netBalance" class="text-base md:text-xl font-black text-blue-600 dark:text-blue-400 mt-1">0</h3>
             </div>
             <div class="ios-card p-4 border-r-4 border-cyan-500">
                 <p class="text-xs text-slate-500 font-bold">ديون لنا (على زبائن)</p>
-                <h3 id="pendingUs" class="text-base md:text-xl font-black text-cyan-600 mt-1">0</h3>
+                <h3 id="pendingUs" class="text-base md:text-xl font-black text-cyan-600 dark:text-cyan-400 mt-1">0</h3>
             </div>
             <div class="ios-card p-4 border-r-4 border-amber-500 col-span-2 lg:col-span-1">
                 <p class="text-xs text-slate-500 font-bold">ديون علينا (لتجار)</p>
-                <h3 id="pendingThem" class="text-base md:text-xl font-black text-amber-600 mt-1">0</h3>
+                <h3 id="pendingThem" class="text-base md:text-xl font-black text-amber-600 dark:text-amber-400 mt-1">0</h3>
             </div>
         </section>
 
         <!-- Transactions Table Section (Full Width) -->
         <div class="ios-card p-5 md:p-6 space-y-4">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 border-b pb-3 gap-3">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 border-b dark:border-slate-700 pb-3 gap-3">
                 <h2 class="text-sm md:text-base font-black text-slate-900">سجل المعاملات المكتملة</h2>
                 <button onclick="exportToExcel()" class="flex items-center gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition shadow-sm active:scale-[0.98]">
                     تصدير Excel 📊
@@ -224,7 +297,7 @@
 
             <div class="overflow-x-auto">
                 <table class="w-full text-right text-xs">
-                    <thead class="text-slate-400 border-b border-slate-100 font-bold">
+                    <thead class="text-slate-400 border-b border-slate-100 dark:border-slate-700 font-bold">
                         <tr>
                             <th class="pb-3 px-2">التاريخ</th>
                             <th class="pb-3 px-2">الاسم</th>
@@ -234,7 +307,7 @@
                             <th class="pb-3 px-2 text-center">إجراءات</th>
                         </tr>
                     </thead>
-                    <tbody id="transactionsBody" class="divide-y divide-slate-100"></tbody>
+                    <tbody id="transactionsBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
                 </table>
             </div>
         </div>
@@ -247,7 +320,7 @@
                 <h2 class="text-base md:text-lg font-black text-slate-900">إدارة المخزن والمنتجات</h2>
                 <p class="text-xs text-slate-500 font-semibold mt-0.5">متابعة الكميات، تتبع التعبئة والتغليف، وتسجيل التالف</p>
             </div>
-            <button onclick="openPackagingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs shadow-sm shadow-indigo-200 flex items-center gap-2 active:scale-[0.98]">
+            <button onclick="openPackagingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl transition text-xs shadow-sm shadow-indigo-200 dark:shadow-none flex items-center gap-2 active:scale-[0.98]">
                 📦 إدارة أنواع التعبئة والتغليف
             </button>
         </div>
@@ -261,7 +334,7 @@
         </div>
 
         <div class="ios-card p-5 md:p-6">
-            <h2 class="text-sm md:text-base font-black mb-4 text-slate-900 border-b pb-3">إضافة منتج جديد للمخزن</h2>
+            <h2 class="text-sm md:text-base font-black mb-4 text-slate-900 border-b dark:border-slate-700 pb-3">إضافة منتج جديد للمخزن</h2>
             <form id="addProductForm" class="grid grid-cols-1 md:grid-cols-3 gap-4" onsubmit="handleAddProduct(event)">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">اسم المادة / المنتج</label>
@@ -269,7 +342,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">التصنيف</label>
-                    <select id="newProductCategory" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold bg-white">
+                    <select id="newProductCategory" class="w-full p-3 ios-input rounded-xl outline-none text-xs font-semibold bg-white dark:bg-slate-800">
                         <option value="خضراوات">خضراوات</option>
                         <option value="فواكه">فواكه</option>
                         <option value="ورقيات">ورقيات</option>
@@ -277,7 +350,7 @@
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs shadow-sm shadow-emerald-200 active:scale-[0.98]">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs shadow-sm shadow-emerald-200 dark:shadow-none active:scale-[0.98]">
                         + إضافة المنتج للمخزن
                     </button>
                 </div>
@@ -300,15 +373,15 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- ديون الزبائن -->
             <div class="ios-card p-5 md:p-6 border-t-4 border-cyan-500 space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
                     <h3 class="font-black text-sm text-slate-900 flex items-center gap-2">
                         <span>👤</span> ديون الزبائن (مبالغ لنا بحوزة العالم)
                     </h3>
-                    <span id="tabCustomerDebtsTotal" class="font-black text-cyan-600 text-sm">0</span>
+                    <span id="tabCustomerDebtsTotal" class="font-black text-cyan-600 dark:text-cyan-400 text-sm">0</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
-                        <thead class="text-slate-400 border-b border-slate-100 font-bold">
+                        <thead class="text-slate-400 border-b border-slate-100 dark:border-slate-700 font-bold">
                             <tr>
                                 <th class="pb-2.5 px-2">التاريخ</th>
                                 <th class="pb-2.5 px-2">اسم الزبون</th>
@@ -316,22 +389,22 @@
                                 <th class="pb-2.5 px-2 text-center">إجراء التحصيل</th>
                             </tr>
                         </thead>
-                        <tbody id="customerDebtsTableBody" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="customerDebtsTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
                     </table>
                 </div>
             </div>
 
             <!-- ديون التجار -->
             <div class="ios-card p-5 md:p-6 border-t-4 border-amber-500 space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
                     <h3 class="font-black text-sm text-slate-900 flex items-center gap-2">
                         <span>🏪</span> ديون التجار (مبالغ علينا للتجار)
                     </h3>
-                    <span id="tabMerchantDebtsTotal" class="font-black text-amber-600 text-sm">0</span>
+                    <span id="tabMerchantDebtsTotal" class="font-black text-amber-600 dark:text-amber-400 text-sm">0</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
-                        <thead class="text-slate-400 border-b border-slate-100 font-bold">
+                        <thead class="text-slate-400 border-b border-slate-100 dark:border-slate-700 font-bold">
                             <tr>
                                 <th class="pb-2.5 px-2">التاريخ</th>
                                 <th class="pb-2.5 px-2">اسم التاجر</th>
@@ -339,7 +412,7 @@
                                 <th class="pb-2.5 px-2 text-center">إجراء السداد</th>
                             </tr>
                         </thead>
-                        <tbody id="merchantDebtsTableBody" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="merchantDebtsTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
                     </table>
                 </div>
             </div>
@@ -361,16 +434,16 @@
 
     <!-- PACKAGING TYPES MODAL -->
     <div id="packagingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-100">
-            <button onclick="closePackagingModal()" class="absolute top-5 left-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 transition z-10">✕</button>
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+            <button onclick="closePackagingModal()" class="absolute top-5 left-5 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition z-10">✕</button>
 
-            <div class="border-b pb-3 pl-10">
+            <div class="border-b dark:border-slate-700 pb-3 pl-10">
                 <h2 class="text-base md:text-lg font-black text-slate-900">📦 إدارة أنواع التعبئة والتغليف (الأكياس / الصناديق)</h2>
                 <p class="text-slate-500 text-xs mt-1 font-semibold">أضف أنواع التعبئة مع تحديد السعة والسعر.</p>
             </div>
 
-            <form id="addPackagingForm" onsubmit="handleAddPackagingType(event)" class="bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100 space-y-3">
-                <h3 class="font-bold text-xs text-indigo-900">+ إضافة نوع تعبئة جديد</h3>
+            <form id="addPackagingForm" onsubmit="handleAddPackagingType(event)" class="bg-indigo-50/60 dark:bg-indigo-950/40 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 space-y-3">
+                <h3 class="font-bold text-xs text-indigo-900 dark:text-indigo-300">+ إضافة نوع تعبئة جديد</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1">اسم التعبئة</label>
@@ -392,9 +465,9 @@
 
             <div>
                 <h3 class="font-bold text-xs text-slate-800 mb-2">أنواع التعبئة المسجلة</h3>
-                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                <div class="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
                     <table class="w-full text-right text-xs">
-                        <thead class="bg-slate-50 text-slate-500 font-bold">
+                        <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold">
                             <tr>
                                 <th class="p-3">اسم التعبئة</th>
                                 <th class="p-3">السعر للقطعة</th>
@@ -402,7 +475,7 @@
                                 <th class="p-3 text-center">إجراء</th>
                             </tr>
                         </thead>
-                        <tbody id="packagingTypesTableBody" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="packagingTypesTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
                     </table>
                 </div>
             </div>
@@ -411,20 +484,20 @@
 
     <!-- PRODUCT DETAILS & SALES CALCULATOR MODAL -->
     <div id="productDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-100">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-5 md:p-6 space-y-6 shadow-2xl relative border border-slate-100 dark:border-slate-700">
             
-            <div class="relative border-b pb-4 pt-1">
-                <button onclick="closeProductModal()" class="absolute top-0 left-0 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 transition z-10">✕</button>
+            <div class="relative border-b dark:border-slate-700 pb-4 pt-1">
+                <button onclick="closeProductModal()" class="absolute top-0 left-0 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition z-10">✕</button>
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-12">
                     <div>
-                        <span id="modalProductCategory" class="text-xs px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-100"></span>
+                        <span id="modalProductCategory" class="text-xs px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold border border-blue-100 dark:border-blue-900"></span>
                         <h2 id="modalProductName" class="text-lg md:text-2xl font-black text-slate-900 mt-1"></h2>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="openSpoilageModal()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1">
+                        <button onclick="openSpoilageModal()" class="text-xs bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1">
                             🍏❌ تسجيل تالف / كسر
                         </button>
-                        <button onclick="deleteProduct()" class="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1">
+                        <button onclick="deleteProduct()" class="text-xs bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1">
                             🗑️ حذف المنتج
                         </button>
                     </div>
@@ -433,8 +506,8 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <!-- Section 1: Add Merchant Delivery -->
-                <div class="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-3">
-                    <h3 class="font-black text-xs text-slate-800 border-b pb-2 flex items-center justify-between">
+                <div class="bg-slate-50/80 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-3">
+                    <h3 class="font-black text-xs text-slate-800 border-b dark:border-slate-700 pb-2 flex items-center justify-between">
                         <span>📦 توريد شحنة جديدة من تاجر</span>
                     </h3>
                     <form id="supplierForm" onsubmit="handleAddSupplierStock(event)" class="space-y-3">
@@ -450,9 +523,9 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1 flex justify-between">
                                     <span>نوع التعبئة</span>
-                                    <button type="button" onclick="openPackagingModal()" class="text-indigo-600 underline font-semibold">إضافة</button>
+                                    <button type="button" onclick="openPackagingModal()" class="text-indigo-600 dark:text-indigo-400 underline font-semibold">إضافة</button>
                                 </label>
-                                <select id="supPkgTypeSelect" onchange="calculateSupTotalCost()" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white" required></select>
+                                <select id="supPkgTypeSelect" onchange="calculateSupTotalCost()" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white dark:bg-slate-800" required></select>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
@@ -462,19 +535,19 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1">طريقة التسديد للتاجر</label>
-                                <select id="supPaymentMethod" class="w-full p-2.5 ios-input rounded-xl text-xs font-bold bg-white" required>
+                                <select id="supPaymentMethod" class="w-full p-2.5 ios-input rounded-xl text-xs font-bold bg-white dark:bg-slate-800" required>
                                     <option value="دين علينا (آجل)">دين علينا (آجل)</option>
                                     <option value="نقداً (مصروف)">نقداً (مصروف مدفوع)</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div class="bg-indigo-50/70 p-3 rounded-xl border border-indigo-100 text-xs space-y-1">
-                            <div class="flex justify-between text-indigo-900">
+                        <div class="bg-indigo-50/70 dark:bg-indigo-950/40 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50 text-xs space-y-1">
+                            <div class="flex justify-between text-indigo-900 dark:text-indigo-300">
                                 <span>إجمالي الوزن الحسابي:</span>
                                 <span id="supCalcTotalKg" class="font-bold">0 كغم</span>
                             </div>
-                            <div class="flex justify-between text-indigo-900 font-extrabold text-sm border-t border-indigo-200/60 pt-1">
+                            <div class="flex justify-between text-indigo-900 dark:text-indigo-300 font-extrabold text-sm border-t border-indigo-200/60 dark:border-indigo-800 pt-1">
                                 <span>إجمالي التكلفة الحسابية:</span>
                                 <span id="supCalcTotalCost">0</span>
                             </div>
@@ -487,8 +560,8 @@
                 </div>
 
                 <!-- Section 2: Sell Product Calculator -->
-                <div class="bg-blue-50/40 p-4 rounded-2xl border border-blue-100 space-y-3">
-                    <h3 class="font-black text-xs text-blue-900 border-b border-blue-200/60 pb-2 flex items-center justify-between">
+                <div class="bg-blue-50/40 dark:bg-blue-950/30 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/50 space-y-3">
+                    <h3 class="font-black text-xs text-blue-900 dark:text-blue-300 border-b border-blue-200/60 dark:border-blue-800 pb-2 flex items-center justify-between">
                         <span>⚖️ آلة حاسبة وتسجيل عملية بيع</span>
                     </h3>
                     <form id="sellCalcForm" onsubmit="handleRegisterSale(event)" class="space-y-3">
@@ -497,9 +570,9 @@
                             <input type="text" id="sellCustomerName" list="customersDatalist" placeholder="اسم الزبون" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold" required autocomplete="off">
                         </div>
 
-                        <div class="p-2.5 bg-blue-100/50 rounded-xl border border-blue-200">
-                            <label class="block text-xs font-black text-blue-900 mb-1">اختيار شحنة التاجر</label>
-                            <select id="sellShipmentSelect" onchange="handleShipmentSelectChange()" class="w-full p-2 ios-input rounded-lg text-xs font-bold bg-white" required></select>
+                        <div class="p-2.5 bg-blue-100/50 dark:bg-blue-900/30 rounded-xl border border-blue-200 dark:border-blue-800">
+                            <label class="block text-xs font-black text-blue-900 dark:text-blue-300 mb-1">اختيار شحنة التاجر</label>
+                            <select id="sellShipmentSelect" onchange="handleShipmentSelectChange()" class="w-full p-2 ios-input rounded-lg text-xs font-bold bg-white dark:bg-slate-800" required></select>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-2">
@@ -510,9 +583,9 @@
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1 flex justify-between">
                                     <span>نوع التعبئة</span>
-                                    <button type="button" onclick="openPackagingModal()" class="text-indigo-600 underline font-semibold">إضافة</button>
+                                    <button type="button" onclick="openPackagingModal()" class="text-indigo-600 dark:text-indigo-400 underline font-semibold">إضافة</button>
                                 </label>
-                                <select id="sellPkgTypeSelect" onchange="calculateSalePrice()" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white" required></select>
+                                <select id="sellPkgTypeSelect" onchange="calculateSalePrice()" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white dark:bg-slate-800" required></select>
                             </div>
                         </div>
 
@@ -523,14 +596,14 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1">طريقة الدفع</label>
-                                <select id="sellPaymentType" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white">
+                                <select id="sellPaymentType" class="w-full p-2.5 ios-input rounded-xl text-xs font-semibold bg-white dark:bg-slate-800">
                                     <option value="نقد">نقداً (إيراد مكتمل)</option>
                                     <option value="دين">بالدين (دين لنا على زبون)</option>
                                 </select>
                             </div>
                         </div>
 
-                        <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-1.5 text-xs shadow-sm">
+                        <div class="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 space-y-1.5 text-xs shadow-sm">
                             <div class="flex justify-between text-slate-600">
                                 <span>عدد القطع:</span>
                                 <span id="calcPieces" class="font-bold text-slate-900">0 قطعة</span>
@@ -541,7 +614,7 @@
                             </div>
                             <div class="flex justify-between text-slate-600">
                                 <span>تكلفة التعبئة:</span>
-                                <span id="calcPkgCost" class="font-bold text-indigo-700">0</span>
+                                <span id="calcPkgCost" class="font-bold text-indigo-700 dark:text-indigo-400">0</span>
                             </div>
                             <div class="flex justify-between text-slate-600">
                                 <span>أجور النقل:</span>
@@ -551,7 +624,7 @@
                                 <span>عمولة البيع (7%):</span>
                                 <span id="calcCommission" class="font-bold text-slate-900">0</span>
                             </div>
-                            <div class="flex justify-between text-emerald-700 font-extrabold border-t pt-2 text-xs md:text-sm">
+                            <div class="flex justify-between text-emerald-700 dark:text-emerald-400 font-extrabold border-t dark:border-slate-700 pt-2 text-xs md:text-sm">
                                 <span>الإجمالي المطلوب:</span>
                                 <span id="calcGrandTotal">0</span>
                             </div>
@@ -564,11 +637,11 @@
                 </div>
             </div>
 
-            <div class="border-t pt-4">
+            <div class="border-t dark:border-slate-700 pt-4">
                 <h3 class="font-black text-xs text-slate-800 mb-2">سجل شحنات الموردين والمخزون المتبقي</h3>
-                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                <div class="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
                     <table class="w-full text-right text-xs">
-                        <thead class="bg-slate-50 text-slate-500 font-bold">
+                        <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold">
                             <tr>
                                 <th class="p-2.5">التاريخ</th>
                                 <th class="p-2.5">التاجر</th>
@@ -581,7 +654,7 @@
                                 <th class="p-2.5 text-center">إجراء</th>
                             </tr>
                         </thead>
-                        <tbody id="productSuppliersTableBody" class="divide-y divide-slate-100"></tbody>
+                        <tbody id="productSuppliersTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/60"></tbody>
                     </table>
                 </div>
             </div>
@@ -591,9 +664,9 @@
 
     <!-- PARTIAL PAYMENT MODAL -->
     <div id="partialPaymentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-100">
-            <button onclick="closePartialPaymentModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 transition">✕</button>
-            <h3 class="text-base font-black text-slate-900 border-b pb-2">💳 تسديد دين (كلي أو جزئي)</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+            <button onclick="closePartialPaymentModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition">✕</button>
+            <h3 class="text-base font-black text-slate-900 border-b dark:border-slate-700 pb-2">💳 تسديد دين (كلي أو جزئي)</h3>
             <p class="text-xs text-slate-500 font-semibold" id="payModalSubtext"></p>
 
             <form onsubmit="handleExecutePartialPayment(event)" class="space-y-3">
@@ -620,9 +693,9 @@
 
     <!-- EDIT TRANSACTION MODAL -->
     <div id="editTransactionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-100">
-            <button onclick="closeEditModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 transition">✕</button>
-            <h3 class="text-base font-black text-slate-900 border-b pb-2">✏️ تعديل المعاملة المالية</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+            <button onclick="closeEditModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition">✕</button>
+            <h3 class="text-base font-black text-slate-900 border-b dark:border-slate-700 pb-2">✏️ تعديل المعاملة المالية</h3>
 
             <form onsubmit="handleSaveEditTransaction(event)" class="space-y-3">
                 <input type="hidden" id="editDocId">
@@ -647,14 +720,14 @@
 
     <!-- SPOILAGE MODAL -->
     <div id="spoilageModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-100">
-            <button onclick="closeSpoilageModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 transition">✕</button>
-            <h3 class="text-base font-black text-slate-900 border-b pb-2">🍏❌ تسجيل كمية تالفة / كسر</h3>
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-5 md:p-6 space-y-4 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+            <button onclick="closeSpoilageModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition">✕</button>
+            <h3 class="text-base font-black text-slate-900 border-b dark:border-slate-700 pb-2">🍏❌ تسجيل كمية تالفة / كسر</h3>
 
             <form onsubmit="handleSaveSpoilage(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">اختر الشحنة المصابة بالتلف</label>
-                    <select id="spoilageShipmentSelect" class="w-full p-2.5 ios-input rounded-xl text-xs font-bold bg-white" required></select>
+                    <select id="spoilageShipmentSelect" class="w-full p-2.5 ios-input rounded-xl text-xs font-bold bg-white dark:bg-slate-800" required></select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">عدد القطع التالفة (أو الصناديق)</label>
@@ -673,11 +746,11 @@
 
     <!-- INVOICE PRINT & WHATSAPP MODAL -->
     <div id="invoiceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] flex items-center justify-center p-3 md:p-4 hidden">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl relative border border-slate-100">
-            <button onclick="closeInvoiceModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 transition">✕</button>
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl relative border border-slate-100 dark:border-slate-700">
+            <button onclick="closeInvoiceModal()" class="absolute top-4 left-4 w-8 h-8 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-full flex items-center justify-center font-bold text-slate-600 dark:text-slate-200 transition">✕</button>
             
-            <div id="printableInvoice" class="p-6 bg-slate-50 rounded-2xl border border-slate-200 space-y-4 text-xs">
-                <div class="text-center border-b pb-3">
+            <div id="printableInvoice" class="p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 text-xs">
+                <div class="text-center border-b dark:border-slate-700 pb-3">
                     <h2 class="text-lg font-black text-slate-900">سوق الفواكه والخضار</h2>
                     <p class="text-slate-500 font-bold mt-0.5">فاتورة بيع ومعاملة مالية</p>
                     <p class="text-[10px] text-slate-400 mt-1" id="invDate"></p>
@@ -685,11 +758,11 @@
                 
                 <div class="space-y-1.5">
                     <div class="flex justify-between"><span class="text-slate-500">اسم العميل:</span> <span id="invCustomer" class="font-bold text-slate-900"></span></div>
-                    <div class="flex justify-between"><span class="text-slate-500">نوع المعاملة:</span> <span id="invType" class="font-bold text-blue-600"></span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">نوع المعاملة:</span> <span id="invType" class="font-bold text-blue-600 dark:text-blue-400"></span></div>
                     <div class="flex justify-between"><span class="text-slate-500">البيان والتفاصيل:</span> <span id="invDetails" class="font-semibold text-slate-800"></span></div>
                 </div>
 
-                <div class="border-t pt-3 flex justify-between items-center font-black text-base text-emerald-700">
+                <div class="border-t dark:border-slate-700 pt-3 flex justify-between items-center font-black text-base text-emerald-700 dark:text-emerald-400">
                     <span>المبلغ الكلي:</span>
                     <span id="invAmount"></span>
                 </div>
@@ -705,6 +778,35 @@
 </div>
 
 <script>
+    // Theme Toggle Logic
+    function initTheme() {
+        const savedTheme = localStorage.getItem('appTheme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            updateThemeToggleIcons(true);
+        } else {
+            document.documentElement.classList.remove('dark');
+            updateThemeToggleIcons(false);
+        }
+    }
+
+    function toggleDarkMode() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('appTheme', isDark ? 'dark' : 'light');
+        updateThemeToggleIcons(isDark);
+        showToast(isDark ? "تم تفعيل الوضع الداكن 🌙" : "تم تفعيل الوضع الفاتح ☀️");
+    }
+
+    function updateThemeToggleIcons(isDark) {
+        const btns = document.querySelectorAll('.theme-toggle-btn');
+        btns.forEach(btn => {
+            btn.innerHTML = isDark ? '☀️ الوضع الفاتح' : '🌙 الوضع الداكن';
+        });
+    }
+
+    // Initialize Theme immediately
+    initTheme();
+
     // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyA43eyingrPD2yBjsW8llKOH6G8m6C2MGM",
@@ -727,7 +829,7 @@
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         
-        let bgClass = 'bg-slate-900 text-white';
+        let bgClass = 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900';
         if (type === 'success') bgClass = 'bg-emerald-600 text-white';
         if (type === 'error') bgClass = 'bg-red-600 text-white';
         if (type === 'warning') bgClass = 'bg-amber-500 text-white';
@@ -1053,7 +1155,7 @@
 
             if (r.status === 'مكتمل') {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition";
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800 transition";
                 
                 const isOutflow = r.type.includes('مصروف') || r.type.includes('خسارة') || r.type.includes('سداد دين');
 
@@ -1061,7 +1163,7 @@
                     <td class="py-3 px-2 text-slate-500 font-semibold date-cell">${r.date}</td>
                     <td class="py-3 px-2 font-bold text-slate-900">${r.personName}</td>
                     <td class="py-3 px-2"><span class="badge-type ${getBadgeClass(r.type)}">${r.type}</span></td>
-                    <td class="py-3 px-2 font-black ${isOutflow ? 'text-red-600' : 'text-emerald-600'}">
+                    <td class="py-3 px-2 font-black ${isOutflow ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}">
                         ${isOutflow ? '-' : '+'}${formatNumber(r.amount)}
                     </td>
                     <td class="py-3 px-2 text-slate-500 font-semibold">${r.details || '---'}</td>
@@ -1084,12 +1186,12 @@
     }
 
     function getBadgeClass(type) {
-        if (type.includes('إيراد')) return 'bg-emerald-100 text-emerald-800';
-        if (type.includes('تحصيل دين')) return 'bg-teal-100 text-teal-800';
-        if (type.includes('سداد دين')) return 'bg-purple-100 text-purple-800';
-        if (type.includes('مصروف') || type.includes('خسارة')) return 'bg-red-100 text-red-800';
-        if (type.includes('دين لنا')) return 'bg-cyan-100 text-cyan-800';
-        return 'bg-amber-100 text-amber-800';
+        if (type.includes('إيراد')) return 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300';
+        if (type.includes('تحصيل دين')) return 'bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300';
+        if (type.includes('سداد دين')) return 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300';
+        if (type.includes('مصروف') || type.includes('خسارة')) return 'bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-300';
+        if (type.includes('دين لنا')) return 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300';
+        return 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300';
     }
 
     function renderDebtsTab() {
@@ -1107,9 +1209,9 @@
                 tr.innerHTML = `
                     <td class="py-2.5 px-2 text-slate-500 font-semibold date-cell">${r.date}</td>
                     <td class="py-2.5 px-2 font-bold text-slate-900">${r.personName}</td>
-                    <td class="py-2.5 px-2 font-black text-cyan-600">${formatNumber(r.amount)}</td>
+                    <td class="py-2.5 px-2 font-black text-cyan-600 dark:text-cyan-400">${formatNumber(r.amount)}</td>
                     <td class="py-2.5 px-2 text-center">
-                        <button onclick="openPartialPaymentModal('${r.docId}', ${r.amount}, '${r.personName}', '${r.type}')" class="text-xs px-3 py-1 rounded-lg bg-cyan-100 hover:bg-cyan-200 text-cyan-900 font-bold transition">
+                        <button onclick="openPartialPaymentModal('${r.docId}', ${r.amount}, '${r.personName}', '${r.type}')" class="text-xs px-3 py-1 rounded-lg bg-cyan-100 dark:bg-cyan-950 hover:bg-cyan-200 dark:hover:bg-cyan-900 text-cyan-900 dark:text-cyan-200 font-bold transition">
                             💳 تحصيل الدفعة
                         </button>
                     </td>
@@ -1121,9 +1223,9 @@
                 tr.innerHTML = `
                     <td class="py-2.5 px-2 text-slate-500 font-semibold date-cell">${r.date}</td>
                     <td class="py-2.5 px-2 font-bold text-slate-900">${r.personName}</td>
-                    <td class="py-2.5 px-2 font-black text-amber-600">${formatNumber(r.amount)}</td>
+                    <td class="py-2.5 px-2 font-black text-amber-600 dark:text-amber-400">${formatNumber(r.amount)}</td>
                     <td class="py-2.5 px-2 text-center">
-                        <button onclick="openPartialPaymentModal('${r.docId}', ${r.amount}, '${r.personName}', '${r.type}')" class="text-xs px-3 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold transition">
+                        <button onclick="openPartialPaymentModal('${r.docId}', ${r.amount}, '${r.personName}', '${r.type}')" class="text-xs px-3 py-1 rounded-lg bg-amber-100 dark:bg-amber-950 hover:bg-amber-200 dark:hover:bg-amber-900 text-amber-900 dark:text-amber-200 font-bold transition">
                             💳 تسديد للتاجر
                         </button>
                     </td>
@@ -1162,8 +1264,8 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="p-3 font-bold text-slate-800">${p.name}</td>
-                <td class="p-3 font-semibold text-emerald-600">${formatNumber(p.price)}</td>
-                <td class="p-3 font-black text-blue-600">${p.capacityKg} كغم</td>
+                <td class="p-3 font-semibold text-emerald-600 dark:text-emerald-400">${formatNumber(p.price)}</td>
+                <td class="p-3 font-black text-blue-600 dark:text-blue-400">${p.capacityKg} كغم</td>
                 <td class="p-3 text-center">
                     <button onclick="deletePackagingType('${p.docId}')" class="text-xs text-red-500 font-bold">حذف</button>
                 </td>
@@ -1203,13 +1305,13 @@
             const isLowStock = totalRemainingPieces > 0 && totalRemainingPieces <= 5;
 
             const card = document.createElement('div');
-            card.className = "ios-card p-3 sm:p-4 cursor-pointer hover:border-blue-500 transition flex flex-col justify-between border border-slate-200 bg-white rounded-2xl relative overflow-hidden";
+            card.className = "ios-card p-3 sm:p-4 cursor-pointer hover:border-blue-500 transition flex flex-col justify-between border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-2xl relative overflow-hidden";
             card.onclick = () => openProductModal(p.docId);
 
             card.innerHTML = `
                 ${isLowStock ? '<div class="absolute top-2 left-2 bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded-md font-black animate-pulse">⚠️ مخزون منخفض</div>' : ''}
                 <div class="flex justify-between items-start w-full gap-1">
-                    <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold border border-slate-200">${p.category}</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold border border-slate-200 dark:border-slate-600">${p.category}</span>
                 </div>
                 
                 <div class="my-3 text-center">
@@ -1217,9 +1319,9 @@
                     <p class="text-[10px] text-slate-400 font-semibold mt-0.5">الشحنات: ${suppliers.length}</p>
                 </div>
                 
-                <div class="w-full pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] sm:text-xs">
+                <div class="w-full pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center text-[10px] sm:text-xs">
                     <span class="text-slate-500 font-bold">المتبقي:</span>
-                    <span class="font-black px-2 py-0.5 rounded-md ${totalRemainingPieces > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}">
+                    <span class="font-black px-2 py-0.5 rounded-md ${totalRemainingPieces > 0 ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300' : 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400'}">
                         ${totalRemainingPieces > 0 ? formatNumber(totalRemainingPieces, false) + ' قطعة' : 'نفذ'}
                     </span>
                 </div>
@@ -1303,12 +1405,12 @@
             tr.innerHTML = `
                 <td class="p-2.5 text-slate-500 font-semibold date-cell">${s.date || '---'}</td>
                 <td class="p-2.5 font-bold text-slate-800">${s.merchantName}</td>
-                <td class="p-2.5"><span class="badge-type bg-slate-100 text-slate-800">${s.paymentMethod || 'عام'}</span></td>
-                <td class="p-2.5 font-bold text-emerald-600">${formatNumber(s.buyPrice)}</td>
+                <td class="p-2.5"><span class="badge-type bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200">${s.paymentMethod || 'عام'}</span></td>
+                <td class="p-2.5 font-bold text-emerald-600 dark:text-emerald-400">${formatNumber(s.buyPrice)}</td>
                 <td class="p-2.5 font-semibold">${s.pkgType}</td>
-                <td class="p-2.5 font-black text-indigo-700">${formatNumber(s.totalCost || 0)}</td>
+                <td class="p-2.5 font-black text-indigo-700 dark:text-indigo-400">${formatNumber(s.totalCost || 0)}</td>
                 <td class="p-2.5 font-bold">${s.pieceCount} قطعة</td>
-                <td class="p-2.5 font-black ${remPieces > 0 ? 'text-emerald-600' : 'text-red-500'}">${remPieces} قطعة</td>
+                <td class="p-2.5 font-black ${remPieces > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}">${remPieces} قطعة</td>
                 <td class="p-2.5 text-center">
                     <button onclick="deleteSupplierStock('${s.id}')" class="text-xs text-red-500 font-bold">حذف</button>
                 </td>
@@ -1535,14 +1637,14 @@
             const card = document.createElement('div');
             card.className = "ios-card p-5 space-y-3 border-t-4 border-indigo-500";
             card.innerHTML = `
-                <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex justify-between items-center border-b dark:border-slate-700 pb-3">
                     <div>
                         <h3 class="text-base font-black text-slate-900">${merchant}</h3>
-                        <p class="text-xs text-slate-500 font-semibold mt-0.5">الدين المتبقي: <b class="text-amber-600">${formatNumber(pendingDebt)}</b> | المدفوع: <b class="text-emerald-600">${formatNumber(totalPaid)}</b></p>
+                        <p class="text-xs text-slate-500 font-semibold mt-0.5">الدين المتبقي: <b class="text-amber-600 dark:text-amber-400">${formatNumber(pendingDebt)}</b> | المدفوع: <b class="text-emerald-600 dark:text-emerald-400">${formatNumber(totalPaid)}</b></p>
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="exportMerchantToExcel('${merchant}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">Excel 📊</button>
-                        <button onclick="deleteMerchant('${merchant}')" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">🗑️ حذف التاجر</button>
+                        <button onclick="deleteMerchant('${merchant}')" class="bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 font-bold px-3 py-1.5 rounded-xl text-xs transition active:scale-[0.98]">🗑️ حذف التاجر</button>
                     </div>
                 </div>
                 <div class="text-xs font-semibold text-slate-600">عدد الشحنات الموردة: ${mShipments.length} | إجمالي حركات البيع: ${mSales.length}</div>
